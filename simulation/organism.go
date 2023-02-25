@@ -3,9 +3,7 @@ package simulation
 import (
 	"github.com/JonasKraska/go-evolution-sim/engine"
 	"github.com/JonasKraska/go-evolution-sim/engine/random"
-	"github.com/fogleman/gg"
-	"image"
-	"image/color"
+    "github.com/hajimehoshi/ebiten/v2"
 )
 
 type Energy float64
@@ -13,22 +11,14 @@ type Energy float64
 type Organism struct {
 	engine.Movable
 
-    sprite image.Image
+	sprite *ebiten.Image
 	genome Genome
 	energy Energy
 }
 
-type OrganismConfig struct {
-	Color color.Color
-}
-
-func NewOrganism(config OrganismConfig, position engine.Position) *Organism {
-	genome := Genome{
-		Color: config.Color,
-	}
-
+func NewOrganism(genome Genome, position engine.Position) *Organism {
 	o := &Organism{
-        genome: genome,
+		genome: NewGenome(genome),
 		energy: Energy(random.FloatBetween(1, 10)),
 	}
 
@@ -46,16 +36,11 @@ func (o *Organism) Update() {
 	o.MoveTo(position)
 }
 
-func (o *Organism) Draw() image.Image {
+func (o *Organism) Draw() *ebiten.Image {
 	if o.sprite == nil {
-		dc := gg.NewContext(1, 1)
-
-		dc.DrawRectangle(0, 0, 1, 1)
-		dc.SetColor(o.genome.Color)
-		dc.Fill()
-
-        o.sprite = dc.Image()
+        o.sprite = ebiten.NewImage(1, 1)
+        o.sprite.Fill(o.genome.Color)
 	}
 
-    return o.sprite
+	return o.sprite
 }

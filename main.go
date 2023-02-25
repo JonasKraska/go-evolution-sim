@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/JonasKraska/go-evolution-sim/engine"
-	"github.com/JonasKraska/go-evolution-sim/engine/random"
 	"github.com/JonasKraska/go-evolution-sim/simulation"
 	"image/color"
 )
@@ -15,11 +14,11 @@ func main() {
 		Organisms: []simulation.OrganismCohort{
 			{
 				Count: 256,
-				Config: simulation.OrganismConfig{
+				Genome: simulation.Genome{
 					Color: color.RGBA{
-						R: uint8(random.IntBetween(50, 250)),
-						G: uint8(random.IntBetween(50, 250)),
-						B: uint8(random.IntBetween(50, 250)),
+						R: 255, //uint8(random.IntBetween(50, 250)),
+						G: 255, //uint8(random.IntBetween(50, 250)),
+						B: 255, //uint8(random.IntBetween(50, 250)),
 					},
 				},
 			},

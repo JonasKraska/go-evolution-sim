@@ -1,9 +1,7 @@
 package engine
 
-import (
-	"image"
-)
+import "github.com/hajimehoshi/ebiten/v2"
 
 type Drawer interface {
-	Draw() image.Image
+    Draw() *ebiten.Image
 }

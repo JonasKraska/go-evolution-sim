@@ -3,8 +3,7 @@ package simulation
 import (
 	"github.com/JonasKraska/go-evolution-sim/engine"
 	"github.com/JonasKraska/go-evolution-sim/engine/random"
-	"github.com/fogleman/gg"
-	"image"
+    "github.com/hajimehoshi/ebiten/v2"
 	"image/color"
 )
 
@@ -23,7 +22,7 @@ type WorldConfig struct {
 
 type OrganismCohort struct {
 	Count  int
-	Config OrganismConfig
+    Genome Genome
 }
 
 func NewWorld(config WorldConfig) *World {
@@ -56,7 +55,7 @@ func NewWorld(config WorldConfig) *World {
     for _, cohort := range config.Organisms {
         for o := 1; o < cohort.Count; o++ {
             w.AddChild(NewOrganism(
-                cohort.Config,
+                cohort.Genome,
                 w.randomPosition(),
             ))
         }
@@ -126,18 +125,10 @@ func NewWorld(config WorldConfig) *World {
 // }
 //}
 
-var background image.Image
 
-func (w *World) Draw() image.Image {
-	if background == nil {
-		dc := gg.NewContext(w.size.W, w.size.H)
-
-		dc.DrawRectangle(0, 0, float64(w.size.W), float64(w.size.H))
-		dc.SetColor(color.RGBA{R: 30, G: 30, B: 30, A: 255})
-		dc.Fill()
-
-		background = dc.Image()
-	}
+func (w *World) Draw() *ebiten.Image {
+    background := ebiten.NewImage(w.size.W, w.size.H)
+    background.Fill(color.RGBA{R: 30, G: 30, B: 30, A: 255})
 
 	return background
 }

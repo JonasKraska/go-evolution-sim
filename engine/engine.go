@@ -99,7 +99,7 @@ func (e *Engine) drawNode(node any) *ebiten.Image {
 		return nil
 	}
 
-	frame := ebiten.NewImageFromImage(drawer.Draw())
+	frame := drawer.Draw()
 
 	if nester, ok := node.(Nester); ok {
 		for _, child := range nester.GetChildren() {
