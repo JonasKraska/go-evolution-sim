@@ -5,6 +5,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"log"
+	"math"
 	"time"
 )
 
@@ -26,7 +27,7 @@ func (e *Engine) SetZoom(factor uint8) *Engine {
 	return e
 }
 
-func (e *Engine) SetTicksPerSecond(tps uint8) *Engine {
+func (e *Engine) SetTicksPerSecond(tps uint16) *Engine {
 	ebiten.SetTPS(int(tps))
 	return e
 }
@@ -125,7 +126,7 @@ func (e *Engine) drawNode(node Noder) *ebiten.Image {
 		position := placer.GetPosition()
 
 		options := &ebiten.DrawImageOptions{}
-		options.GeoM.Translate(float64(position.X-1), float64(position.Y-1))
+		options.GeoM.Translate(math.Floor(position.X), math.Floor(position.Y))
 
 		frame.DrawImage(sprite, options)
 	}

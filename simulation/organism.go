@@ -48,8 +48,8 @@ func (o *Organism) Update(delta time.Duration) {
 
 	position := o.GetPosition()
 
-	position.X += random.IntBetween(-1, 1)
-	position.Y += random.IntBetween(-1, 1)
+	position.X += float64(random.IntBetween(-1, 1))
+	position.Y += float64(random.IntBetween(-1, 1))
 
 	o.MoveTo(position)
 }

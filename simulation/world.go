@@ -154,7 +154,7 @@ func (w *World) Draw() *ebiten.Image {
 // }
 
 func (w *World) Contains(position engine.Position) bool {
-	return position.X > 0 && position.Y > 0 && position.X <= w.width && position.Y <= w.height
+	return position.X > 0 && position.Y > 0 && position.X <= float64(w.width) && position.Y <= float64(w.height)
 }
 
 func (w *World) spawnOrganism(position engine.Position, genome Genome, energy Energy) {
@@ -179,7 +179,7 @@ func (w *World) onOrganismDeath(organism *Organism) {
 
 func (w *World) randomPosition() engine.Position {
 	return engine.Position{
-		X: random.IntBetween(0, w.width),
-		Y: random.IntBetween(0, w.height),
+		X: random.FloatBetween(0, w.width),
+		Y: random.FloatBetween(0, w.height),
 	}
 }
