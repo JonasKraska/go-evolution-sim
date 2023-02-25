@@ -49,20 +49,20 @@ func NewWorld(config WorldConfig) *World {
 
 	for _, cohort := range config.Food {
 		for f := 1; f < cohort.Count; f++ {
-			w.AddChild(NewFood(
+			w.spawnFood(
 				w.randomPosition(),
 				cohort.Energy,
-			))
+			)
 		}
 	}
 
 	for _, cohort := range config.Organisms {
 		for o := 1; o < cohort.Count; o++ {
-			w.AddChild(NewOrganism(
+			w.spawnOrganism(
+				w.randomPosition(),
 				cohort.Genome,
 				cohort.Energy,
-				w.randomPosition(),
-			))
+			)
 		}
 	}
 
@@ -156,6 +156,26 @@ func (w *World) Draw() *ebiten.Image {
 
 func (w *World) GetDimensions() engine.Size {
 	return w.size
+}
+
+func (w *World) spawnOrganism(position engine.Position, genome Genome, energy Energy) {
+	organism := NewOrganism(position, genome, energy)
+
+	w.AddChild(organism)
+
+	organism.Register(OrganismDeathHook, func() {
+		w.onOrganismDeath(organism)
+	})
+}
+
+func (w *World) spawnFood(position engine.Position, energy Energy) {
+	food := NewFood(position, energy)
+
+	w.AddChild(food)
+}
+
+func (w *World) onOrganismDeath(organism *Organism) {
+	w.spawnFood(organism.GetPosition(), Energy(5))
 }
 
 func (w *World) randomPosition() engine.Position {

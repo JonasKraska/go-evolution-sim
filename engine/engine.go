@@ -45,7 +45,10 @@ func (e *Engine) Run(game Gamer) {
 
 func (e *Engine) Update() error {
 	delta := time.Since(e.lastUpdate)
+
 	e.updateNode(e.game, delta)
+	e.moveNode(e.game, delta)
+
 	e.lastUpdate = time.Now()
 
 	return nil
@@ -81,6 +84,14 @@ func (e *Engine) updateNode(node Noder, delta time.Duration) {
 		updater.Update(delta)
 	}
 
+	for _, n := range node.GetChildren() {
+		e.updateNode(n, delta)
+	}
+
+	node.removeChildren()
+}
+
+func (e *Engine) moveNode(node Noder, delta time.Duration) {
 	if mover, ok := node.(Mover); ok {
 		nextPosition := mover.getNextPosition()
 		dimensions := e.game.GetDimensions()
@@ -92,7 +103,7 @@ func (e *Engine) updateNode(node Noder, delta time.Duration) {
 	}
 
 	for _, n := range node.GetChildren() {
-		e.updateNode(n, delta)
+		e.moveNode(n, delta)
 	}
 }
 

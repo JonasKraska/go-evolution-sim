@@ -7,11 +7,16 @@ import (
 	"time"
 )
 
+const (
+	OrganismDeathHook = engine.Hook("organism.death")
+)
+
 type Energy float64
 
 type Organism struct {
 	engine.Node
 	engine.Movable
+
 	sprite *ebiten.Image
 
 	genome Genome
@@ -20,7 +25,7 @@ type Organism struct {
 	energyBurnRate float64
 }
 
-func NewOrganism(genome Genome, energy Energy, position engine.Position) *Organism {
+func NewOrganism(position engine.Position, genome Genome, energy Energy) *Organism {
 	o := &Organism{
 		genome: NewGenome(genome),
 		energy: energy,
@@ -36,8 +41,8 @@ func (o *Organism) Update(delta time.Duration) {
 	o.energy -= Energy(o.energyBurnRate * delta.Seconds())
 
 	if o.energy < 0 {
-		o.energy = 0
-
+		o.Dispatch(OrganismDeathHook)
+		o.Remove()
 		return
 	}
 

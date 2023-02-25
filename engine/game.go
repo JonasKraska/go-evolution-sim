@@ -10,6 +10,6 @@ type Gamer interface {
 	GetDimensions() Size
 }
 
-func (g *Game) GetParent() *Noder {
+func (g *Game) GetParent() Noder {
 	panic("The game is the engine root object and has no parents")
 }
