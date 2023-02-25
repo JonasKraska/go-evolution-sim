@@ -17,5 +17,5 @@ func IntBetween(min, max int) int {
 }
 
 func FloatBetween(min, max int) float64 {
-    return float64(IntBetween(min, max-1)) + generator.Float64()
+	return float64(IntBetween(min, max-1)) + generator.Float64()
 }

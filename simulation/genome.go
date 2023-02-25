@@ -6,8 +6,8 @@ import (
 )
 
 type Genome struct {
-	Color color.RGBA
-    MetabolismRate uint8
+	Color          color.RGBA
+	MetabolismRate uint8
 }
 
 func NewGenome(g Genome) Genome {
@@ -23,7 +23,7 @@ func DeserializeGenome(bytes []byte) Genome {
 			G: bytes[1],
 			B: bytes[2],
 		},
-        MetabolismRate: bytes[3],
+		MetabolismRate: bytes[3],
 	})
 }
 
@@ -34,7 +34,7 @@ func (g Genome) Serialize() []byte {
 	bytes[1] = g.Color.G
 	bytes[2] = g.Color.B
 
-    bytes[3] = g.MetabolismRate
+	bytes[3] = g.MetabolismRate
 
 	return bytes
 }
@@ -42,8 +42,8 @@ func (g Genome) Serialize() []byte {
 func (g Genome) PointMutation() Genome {
 	bytes := g.Serialize()
 
-    byteIndex := random.IntBetween(0, len(bytes) - 1)
-    bytes[byteIndex]  ^= 1 << random.IntBetween(0, 7)
+	byteIndex := random.IntBetween(0, len(bytes)-1)
+	bytes[byteIndex] ^= 1 << random.IntBetween(0, 7)
 
 	return DeserializeGenome(bytes)
 }

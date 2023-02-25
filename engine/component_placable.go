@@ -7,7 +7,7 @@ type Placeable struct {
 }
 
 type Placer interface {
-    SetPosition(position Position)
+	SetPosition(position Position)
 	GetPosition() Position
 }
 

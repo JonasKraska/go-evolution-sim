@@ -1,7 +1,7 @@
 package simulation
 
 import (
-    "github.com/JonasKraska/go-evolution-sim/engine"
+	"github.com/JonasKraska/go-evolution-sim/engine"
 	"github.com/JonasKraska/go-evolution-sim/engine/random"
 	"github.com/hajimehoshi/ebiten/v2"
 	"time"
@@ -10,35 +10,36 @@ import (
 type Energy float64
 
 type Organism struct {
-    engine.Node
+	engine.Node
 	engine.Movable
 	sprite *ebiten.Image
 
 	genome Genome
 	energy Energy
 
-    energyBurnRate float64
+	energyBurnRate float64
 }
 
 func NewOrganism(genome Genome, energy Energy, position engine.Position) *Organism {
 	o := &Organism{
 		genome: NewGenome(genome),
-        energy: energy,
+		energy: energy,
 	}
 
-    o.initEnergyBurnRate()
+	o.initEnergyBurnRate()
 	o.SetPosition(position)
 
 	return o
 }
 
 func (o *Organism) Update(delta time.Duration) {
-    o.energy -= Energy(o.energyBurnRate * delta.Seconds())
+	o.energy -= Energy(o.energyBurnRate * delta.Seconds())
 
-    if o.energy < 0 {
-        o.energy = 0
-        return
-    }
+	if o.energy < 0 {
+		o.energy = 0
+
+		return
+	}
 
 	position := o.GetPosition()
 
@@ -58,5 +59,5 @@ func (o *Organism) Draw() *ebiten.Image {
 }
 
 func (o *Organism) initEnergyBurnRate() {
-    o.energyBurnRate = float64(o.genome.MetabolismRate) / 2
+	o.energyBurnRate = float64(o.genome.MetabolismRate) / 2
 }

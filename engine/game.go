@@ -1,15 +1,15 @@
 package engine
 
 type Game struct {
-    Node
+	Node
 }
 
 type Gamer interface {
-    Noder
+	Noder
 
-    GetDimensions() Size
+	GetDimensions() Size
 }
 
 func (g *Game) GetParent() *Noder {
-    panic("The game is the engine root object and has no parents")
+	panic("The game is the engine root object and has no parents")
 }

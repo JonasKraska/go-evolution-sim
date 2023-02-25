@@ -4,11 +4,11 @@ import (
 	"github.com/JonasKraska/go-evolution-sim/engine"
 	"github.com/hajimehoshi/ebiten/v2"
 	"image/color"
-    "time"
+	"time"
 )
 
 type Food struct {
-    engine.Node
+	engine.Node
 	engine.Placeable
 
 	Energy Energy
