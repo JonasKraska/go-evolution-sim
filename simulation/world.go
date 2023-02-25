@@ -14,16 +14,21 @@ type World struct {
 }
 
 type WorldConfig struct {
-	Width        int
-	Height       int
-	NumberOfFood int
-	Organisms    []OrganismCohort
+	Width     int
+	Height    int
+	Food      []FoodCohort
+	Organisms []OrganismCohort
 }
 
 type OrganismCohort struct {
 	Count  int
 	Energy Energy
 	Genome Genome
+}
+
+type FoodCohort struct {
+	Count  int
+	Energy Energy
 }
 
 func NewWorld(config WorldConfig) *World {
@@ -35,10 +40,6 @@ func NewWorld(config WorldConfig) *World {
 		config.Height = 64
 	}
 
-	if config.NumberOfFood <= 0 {
-		config.NumberOfFood = 16
-	}
-
 	w := &World{
 		size: engine.Size{
 			W: config.Width,
@@ -46,11 +47,13 @@ func NewWorld(config WorldConfig) *World {
 		},
 	}
 
-	for f := 1; f < config.NumberOfFood; f++ {
-		w.AddChild(NewFood(
-			w.randomPosition(),
-			Energy(random.FloatBetween(0, 10)),
-		))
+	for _, cohort := range config.Food {
+		for f := 1; f < cohort.Count; f++ {
+			w.AddChild(NewFood(
+				w.randomPosition(),
+				cohort.Energy,
+			))
+		}
 	}
 
 	for _, cohort := range config.Organisms {

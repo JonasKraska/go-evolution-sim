@@ -21,9 +21,14 @@ func main() {
 	fmt.Println(genome.Serialize())
 
 	game := simulation.NewWorld(simulation.WorldConfig{
-		Width:        350,
-		Height:       225,
-		NumberOfFood: 32,
+		Width:  350,
+		Height: 225,
+		Food: []simulation.FoodCohort{
+			{
+				Count:  32,
+				Energy: simulation.Energy(5),
+			},
+		},
 		Organisms: []simulation.OrganismCohort{
 			{
 				Count:  256,
