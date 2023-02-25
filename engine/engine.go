@@ -5,11 +5,14 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"log"
+    "time"
 )
 
 type Engine struct {
 	game Gamer
 	zoom int
+
+    lastUpdate time.Time
 }
 
 func New() *Engine {
@@ -33,6 +36,7 @@ func (e *Engine) Run(game Gamer) {
 	ebiten.SetWindowTitle("Genetic Simulation")
 
 	e.game = game
+    e.lastUpdate = time.Now()
 
 	if err := ebiten.RunGame(e); err != nil {
 		log.Fatal(err)
@@ -40,7 +44,9 @@ func (e *Engine) Run(game Gamer) {
 }
 
 func (e *Engine) Update() error {
-	e.updateNode(e.game)
+    delta := time.Since(e.lastUpdate)
+    e.updateNode(e.game, delta)
+    e.lastUpdate = time.Now()
 
 	return nil
 }
@@ -70,9 +76,9 @@ func (e *Engine) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHei
 	return 1280, 720
 }
 
-func (e *Engine) updateNode(node any) {
+func (e *Engine) updateNode(node Noder, delta time.Duration) {
 	if updater, ok := node.(Updater); ok {
-		updater.Update()
+        updater.Update(delta)
 	}
 
 	if mover, ok := node.(Mover); ok {
@@ -85,14 +91,12 @@ func (e *Engine) updateNode(node any) {
 		mover.doMove()
 	}
 
-	if nester, ok := node.(Nester); ok {
-		for _, n := range nester.GetChildren() {
-			e.updateNode(n)
-		}
-	}
+    for _, n := range node.GetChildren() {
+            e.updateNode(n, delta)
+    }
 }
 
-func (e *Engine) drawNode(node any) *ebiten.Image {
+func (e *Engine) drawNode(node Noder) *ebiten.Image {
 	drawer, isDrawer := node.(Drawer)
 
 	if isDrawer == false {
@@ -101,23 +105,21 @@ func (e *Engine) drawNode(node any) *ebiten.Image {
 
 	frame := drawer.Draw()
 
-	if nester, ok := node.(Nester); ok {
-		for _, child := range nester.GetChildren() {
-			placer, isPlacer := child.(Placer)
-			sprite := e.drawNode(child)
+    for _, child := range node.GetChildren() {
+    placer, isPlacer := child.(Placer)
+    sprite := e.drawNode(child)
 
-			if sprite == nil || isPlacer == false {
-				continue
-			}
+    if sprite == nil || isPlacer == false {
+    continue
+    }
 
-			position := placer.GetPosition()
+    position := placer.GetPosition()
 
-			options := &ebiten.DrawImageOptions{}
-			options.GeoM.Translate(float64(position.X), float64(position.Y))
+    options := &ebiten.DrawImageOptions{}
+    options.GeoM.Translate(float64(position.X), float64(position.Y))
 
-			frame.DrawImage(sprite, options)
-		}
-	}
+    frame.DrawImage(sprite, options)
+    }
 
 	return frame
 }

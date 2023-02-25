@@ -3,14 +3,14 @@ package simulation
 import (
 	"github.com/JonasKraska/go-evolution-sim/engine"
 	"github.com/JonasKraska/go-evolution-sim/engine/random"
-    "github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2"
 	"image/color"
 )
 
 type World struct {
-	engine.Nestable
+	engine.Game
 
-    size engine.Size
+	size engine.Size
 }
 
 type WorldConfig struct {
@@ -22,7 +22,8 @@ type WorldConfig struct {
 
 type OrganismCohort struct {
 	Count  int
-    Genome Genome
+	Energy Energy
+	Genome Genome
 }
 
 func NewWorld(config WorldConfig) *World {
@@ -39,27 +40,28 @@ func NewWorld(config WorldConfig) *World {
 	}
 
 	w := &World{
-		size:  engine.Size{
-            W: config.Width,
-            H: config.Height,
-        },
+		size: engine.Size{
+			W: config.Width,
+			H: config.Height,
+		},
 	}
 
 	for f := 1; f < config.NumberOfFood; f++ {
-        w.AddChild(NewFood(
-            w.randomPosition(),
-            Energy(random.FloatBetween(0, 10)),
-        ))
+		w.AddChild(NewFood(
+			w.randomPosition(),
+			Energy(random.FloatBetween(0, 10)),
+		))
 	}
 
-    for _, cohort := range config.Organisms {
-        for o := 1; o < cohort.Count; o++ {
-            w.AddChild(NewOrganism(
-                cohort.Genome,
-                w.randomPosition(),
-            ))
-        }
-    }
+	for _, cohort := range config.Organisms {
+		for o := 1; o < cohort.Count; o++ {
+			w.AddChild(NewOrganism(
+				cohort.Genome,
+				cohort.Energy,
+				w.randomPosition(),
+			))
+		}
+	}
 
 	return w
 }
@@ -125,10 +127,9 @@ func NewWorld(config WorldConfig) *World {
 // }
 //}
 
-
 func (w *World) Draw() *ebiten.Image {
-    background := ebiten.NewImage(w.size.W, w.size.H)
-    background.Fill(color.RGBA{R: 30, G: 30, B: 30, A: 255})
+	background := ebiten.NewImage(w.size.W, w.size.H)
+	background.Fill(color.RGBA{R: 30, G: 30, B: 30, A: 255})
 
 	return background
 }
@@ -150,13 +151,13 @@ func (w *World) Draw() *ebiten.Image {
 // 	return geoM
 // }
 
-func (w * World) GetDimensions() engine.Size {
-    return w.size
+func (w *World) GetDimensions() engine.Size {
+	return w.size
 }
 
-func (w * World) randomPosition() engine.Position {
-    return engine.Position{
-        X: random.IntBetween(0, w.size.W),
-        Y: random.IntBetween(0, w.size.H),
-    }
+func (w *World) randomPosition() engine.Position {
+	return engine.Position{
+		X: random.IntBetween(0, w.size.W),
+		Y: random.IntBetween(0, w.size.H),
+	}
 }

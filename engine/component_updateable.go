@@ -1,6 +1,7 @@
 package engine
 
-type Updater interface {
-    Update()
-}
+import "time"
 
+type Updater interface {
+	Update(delta time.Duration)
+}

@@ -4,9 +4,11 @@ import (
 	"github.com/JonasKraska/go-evolution-sim/engine"
 	"github.com/hajimehoshi/ebiten/v2"
 	"image/color"
+    "time"
 )
 
 type Food struct {
+    engine.Node
 	engine.Placeable
 
 	Energy Energy
@@ -22,7 +24,7 @@ func NewFood(position engine.Position, energy Energy) *Food {
 	return f
 }
 
-func (f *Food) Update() {
+func (f *Food) Update(delta time.Duration) {
 	// @TODO: energy decay?
 }
 

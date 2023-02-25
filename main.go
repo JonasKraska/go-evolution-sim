@@ -1,26 +1,34 @@
 package main
 
 import (
+	"fmt"
 	"github.com/JonasKraska/go-evolution-sim/engine"
 	"github.com/JonasKraska/go-evolution-sim/simulation"
 	"image/color"
 )
 
 func main() {
+
+	genome := simulation.Genome{
+		Color: color.RGBA{
+			R: 255, //uint8(random.IntBetween(50, 250)),
+			G: 255, //uint8(random.IntBetween(50, 250)),
+			B: 255, //uint8(random.IntBetween(50, 250)),
+		},
+		MetabolismRate: 100,
+	}
+
+	fmt.Println(genome.Serialize())
+
 	game := simulation.NewWorld(simulation.WorldConfig{
 		Width:        350,
 		Height:       225,
 		NumberOfFood: 32,
 		Organisms: []simulation.OrganismCohort{
 			{
-				Count: 256,
-				Genome: simulation.Genome{
-					Color: color.RGBA{
-						R: 255, //uint8(random.IntBetween(50, 250)),
-						G: 255, //uint8(random.IntBetween(50, 250)),
-						B: 255, //uint8(random.IntBetween(50, 250)),
-					},
-				},
+				Count:  256,
+				Energy: simulation.Energy(250),
+				Genome: genome,
 			},
 		},
 	})
