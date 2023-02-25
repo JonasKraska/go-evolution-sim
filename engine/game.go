@@ -7,7 +7,7 @@ type Game struct {
 type Gamer interface {
 	Noder
 
-	GetDimensions() Size
+	Contains(Position) bool
 }
 
 func (g *Game) GetParent() Noder {

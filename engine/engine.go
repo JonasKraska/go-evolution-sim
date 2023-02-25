@@ -93,9 +93,7 @@ func (e *Engine) updateNode(node Noder, delta time.Duration) {
 
 func (e *Engine) moveNode(node Noder, delta time.Duration) {
 	if mover, ok := node.(Mover); ok {
-		nextPosition := mover.getNextPosition()
-		dimensions := e.game.GetDimensions()
-		if nextPosition.X < 0 || nextPosition.Y < 0 || nextPosition.X >= dimensions.W || nextPosition.Y >= dimensions.H {
+		if e.game.Contains(mover.getNextPosition()) == false {
 			mover.cancelMove()
 		}
 
@@ -127,7 +125,7 @@ func (e *Engine) drawNode(node Noder) *ebiten.Image {
 		position := placer.GetPosition()
 
 		options := &ebiten.DrawImageOptions{}
-		options.GeoM.Translate(float64(position.X), float64(position.Y))
+		options.GeoM.Translate(float64(position.X-1), float64(position.Y-1))
 
 		frame.DrawImage(sprite, options)
 	}

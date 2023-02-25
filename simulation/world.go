@@ -10,12 +10,13 @@ import (
 type World struct {
 	engine.Game
 
-	size engine.Size
+	width  int
+	height int
 }
 
 type WorldConfig struct {
-	Width     int
-	Height    int
+	Width     uint32
+	Height    uint32
 	Food      []FoodCohort
 	Organisms []OrganismCohort
 }
@@ -41,10 +42,8 @@ func NewWorld(config WorldConfig) *World {
 	}
 
 	w := &World{
-		size: engine.Size{
-			W: config.Width,
-			H: config.Height,
-		},
+		width:  int(config.Width),
+		height: int(config.Height),
 	}
 
 	for _, cohort := range config.Food {
@@ -131,7 +130,7 @@ func NewWorld(config WorldConfig) *World {
 //}
 
 func (w *World) Draw() *ebiten.Image {
-	background := ebiten.NewImage(w.size.W, w.size.H)
+	background := ebiten.NewImage(w.width, w.height)
 	background.Fill(color.RGBA{R: 30, G: 30, B: 30, A: 255})
 
 	return background
@@ -154,8 +153,8 @@ func (w *World) Draw() *ebiten.Image {
 // 	return geoM
 // }
 
-func (w *World) GetDimensions() engine.Size {
-	return w.size
+func (w *World) Contains(position engine.Position) bool {
+	return position.X > 0 && position.Y > 0 && position.X <= w.width && position.Y <= w.height
 }
 
 func (w *World) spawnOrganism(position engine.Position, genome Genome, energy Energy) {
@@ -180,7 +179,7 @@ func (w *World) onOrganismDeath(organism *Organism) {
 
 func (w *World) randomPosition() engine.Position {
 	return engine.Position{
-		X: random.IntBetween(0, w.size.W),
-		Y: random.IntBetween(0, w.size.H),
+		X: random.IntBetween(0, w.width),
+		Y: random.IntBetween(0, w.height),
 	}
 }
