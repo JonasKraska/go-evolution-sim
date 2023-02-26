@@ -57,6 +57,10 @@ func (o *Organism) Draw() *ebiten.Image {
 	return o.sprite
 }
 
+func (o *Organism) Consume(energy Energy) {
+	o.energy += energy
+}
+
 func (o *Organism) burnEnergy(delta time.Duration) {
 	rate := 0.5*math.Sqrt(float64(o.genome.Speed)) + 1
 	o.energy -= rate * delta.Seconds()

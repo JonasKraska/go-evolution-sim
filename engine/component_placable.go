@@ -1,5 +1,7 @@
 package engine
 
+import "math"
+
 type Position = Vector
 
 type Placeable struct {
@@ -17,4 +19,8 @@ func (p *Placeable) SetPosition(position Position) {
 
 func (p *Placeable) GetPosition() Position {
 	return p.position
+}
+
+func (v Position) EqualsIgnoringDecimals(other Position) bool {
+	return math.Floor(v.X) == math.Floor(other.X) && math.Floor(v.Y) == math.Floor(other.Y)
 }

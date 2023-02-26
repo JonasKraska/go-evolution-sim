@@ -5,6 +5,7 @@ import (
 	"github.com/JonasKraska/go-evolution-sim/engine/random"
 	"github.com/hajimehoshi/ebiten/v2"
 	"image/color"
+	"time"
 )
 
 type World struct {
@@ -12,6 +13,9 @@ type World struct {
 
 	width  int
 	height int
+
+	organisms []*Organism
+	food      []*Food
 }
 
 type WorldConfig struct {
@@ -68,66 +72,19 @@ func NewWorld(config WorldConfig) *World {
 	return w
 }
 
-// func New(config Config) *World {
-// 	config = normalizeConfig(config)
+func (w *World) Update(delta time.Duration) {
+	for o := 1; o < len(w.organisms); o++ {
+		for f := 1; f < len(w.food); f++ {
+			organism := w.organisms[o]
+			food := w.food[f]
 
-// 	// organismMap := grid.New[uint32, organism.Organism](grid.Size[uint32]{
-// 	// 	W: uint32(config.Size.W),
-// 	// 	H: uint32(config.Size.H),
-// 	// })
-// 	// for o := 0; o < int(config.NumberOfOrganisms); o++ {
-// 	// 	position := organismMap.RandomFreePosition(organismMap.Min(), organismMap.Max())
-// 	// 	organism := organism.New(&config.OrganismConfig)
-// 	// 	organismMap.Set(position, organism)
-// 	// }
-
-// 	// foodMap := grid.New[uint32, food.Food](grid.Size[uint32]{
-// 	// 	W: uint32(config.Size.W),
-// 	// 	H: uint32(config.Size.H),
-// 	// })
-// 	// for f := 0; f < int(config.NumberOfOrganisms); f++ {
-// 	// 	position := foodMap.RandomFreePosition(foodMap.Min(), foodMap.Max())
-// 	// 	food := food.New(d2.Point{X: 1, Y: 1}, 25.0)
-// 	// 	foodMap.Set(position, food)
-// 	// }
-
-// 	return &World{
-// 		Width:             config.Width,
-// 		Height:            config.Height,
-// 		NumberOfOrganisms: config.NumberOfOrganisms,
-// 		OrganismConfig:    config.OrganismConfig,
-// 	}
-// }
-
-//func (w *World) Update(delta time.Duration) {
-// for position, o := range world.OrganismMap.Registry() {
-
-// 	o.Update()
-
-// 	// organism dies: removed from map and skipped on rebuilding
-// 	// the registry in the last step of this loop
-// 	if o.Energy() <= 0 {
-// 		world.OrganismMap.Unset(position)
-
-// 		existingFood, _ := world.FoodMap.Get(position)
-// 		if existingFood != nil {
-// 			existingFood.IncreaseEnergy(25.0)
-// 		} else {
-// 			newFood := food.New(d2.Point{X: 1, Y: 1}, 25.0)
-// 			world.FoodMap.Set(position, newFood)
-// 		}
-
-// 		continue
-// 	}
-
-// 	newPosition := grid.Position[uint32]{
-// 		X: uint32(int(position.X) + random.Between(-1, 1)),
-// 		Y: uint32(int(position.Y) + random.Between(-1, 1)),
-// 	}
-
-// 	world.OrganismMap.Move(position, newPosition)
-// }
-//}
+			if organism.GetPosition().EqualsIgnoringDecimals(food.GetPosition()) {
+				organism.Consume(food.Energy)
+				food.Remove()
+			}
+		}
+	}
+}
 
 func (w *World) Draw() *ebiten.Image {
 	background := ebiten.NewImage(w.width, w.height)
@@ -136,44 +93,38 @@ func (w *World) Draw() *ebiten.Image {
 	return background
 }
 
-// func translatePosition(renderer *Renderer, position grid.Position[uint32]) ebiten.GeoM {
-// 	zoom := renderer.Zoom
-// 	gutter := renderer.Theme.Gutter
-
-// 	posX := int(position.X)
-// 	posY := int(position.Y)
-
-// 	geoM := ebiten.GeoM{}
-// 	geoM.Scale(float64(renderer.Zoom), float64(renderer.Zoom))
-// 	geoM.Translate(
-// 		float64(posX*zoom)+float64(posX*int(gutter)),
-// 		float64(posY*zoom)+float64(posY*int(gutter)),
-// 	)
-
-// 	return geoM
-// }
-
 func (w *World) Contains(position engine.Vector) bool {
 	return position.X > 0 && position.Y > 0 && position.X <= float64(w.width) && position.Y <= float64(w.height)
 }
 
-func (w *World) spawnOrganism(position engine.Position, genome Genome, energy Energy) {
+func (w *World) spawnOrganism(position engine.Position, genome Genome, energy Energy) *Organism {
 	organism := NewOrganism(position, genome, energy)
 
+	w.organisms = append(w.organisms, organism)
 	w.AddChild(organism)
 
 	organism.Register(OrganismDeathHook, func() {
 		w.onOrganismDeath(organism)
 	})
+
+	return organism
 }
 
-func (w *World) spawnFood(position engine.Position, energy Energy) {
+func (w *World) spawnFood(position engine.Position, energy Energy) *Food {
 	food := NewFood(position, energy)
 
+	w.food = append(w.food, food)
 	w.AddChild(food)
+
+	food.Register(engine.NodeRemoveHook, func() {
+		engine.PtrSliceRemovce(w.food, food)
+	})
+
+	return food
 }
 
 func (w *World) onOrganismDeath(organism *Organism) {
+	engine.PtrSliceRemovce(w.organisms, organism)
 	w.spawnFood(organism.GetPosition(), Energy(5))
 }
 
