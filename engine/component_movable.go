@@ -2,30 +2,27 @@ package engine
 
 type Movable struct {
 	Placeable
-	nextPosition Position
+	velocity     Vector
+	lastPosition Position
 }
 
 type Mover interface {
 	Placer
-	MoveTo(position Position)
+	SetVelocity(velocity Vector)
 
-	getNextPosition() Position
 	cancelMove()
 	doMove()
 }
 
-func (m *Movable) MoveTo(position Position) {
-	m.nextPosition = position
-}
-
-func (m *Movable) getNextPosition() Position {
-	return m.nextPosition
+func (m *Movable) SetVelocity(velocity Vector) {
+	m.velocity = velocity
 }
 
 func (m *Movable) cancelMove() {
-	m.nextPosition = m.position
+	m.position = m.lastPosition
 }
 
 func (m *Movable) doMove() {
-	m.position = m.nextPosition
+	m.lastPosition = m.position
+	m.position = m.position.Add(m.velocity)
 }

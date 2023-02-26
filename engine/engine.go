@@ -94,11 +94,11 @@ func (e *Engine) updateNode(node Noder, delta time.Duration) {
 
 func (e *Engine) moveNode(node Noder, delta time.Duration) {
 	if mover, ok := node.(Mover); ok {
-		if e.game.Contains(mover.getNextPosition()) == false {
+		mover.doMove()
+
+		if e.game.Contains(mover.GetPosition()) == false {
 			mover.cancelMove()
 		}
-
-		mover.doMove()
 	}
 
 	for _, n := range node.GetChildren() {

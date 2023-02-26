@@ -153,7 +153,7 @@ func (w *World) Draw() *ebiten.Image {
 // 	return geoM
 // }
 
-func (w *World) Contains(position engine.Position) bool {
+func (w *World) Contains(position engine.Vector) bool {
 	return position.X > 0 && position.Y > 0 && position.X <= float64(w.width) && position.Y <= float64(w.height)
 }
 

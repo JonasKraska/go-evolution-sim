@@ -1,6 +1,6 @@
 package engine
 
-type Position Point
+type Position = Vector
 
 type Placeable struct {
 	position Position

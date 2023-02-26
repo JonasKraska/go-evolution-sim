@@ -7,7 +7,7 @@ type Game struct {
 type Gamer interface {
 	Noder
 
-	Contains(Position) bool
+	Contains(position Vector) bool
 }
 
 func (g *Game) GetParent() Noder {

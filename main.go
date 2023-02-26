@@ -15,7 +15,7 @@ func main() {
 			G: 255, //uint8(random.IntBetween(50, 250)),
 			B: 255, //uint8(random.IntBetween(50, 250)),
 		},
-		MetabolismRate: 100,
+		Speed: 10,
 	}
 
 	fmt.Println(genome.Serialize())
@@ -25,14 +25,14 @@ func main() {
 		Height: 225,
 		Food: []simulation.FoodCohort{
 			{
-				Count:  32,
-				Energy: simulation.Energy(5),
+				Count:  64,
+				Energy: 50,
 			},
 		},
 		Organisms: []simulation.OrganismCohort{
 			{
 				Count:  256,
-				Energy: simulation.Energy(1000),
+				Energy: 100,
 				Genome: genome,
 			},
 		},
@@ -46,6 +46,6 @@ func main() {
 	engine.
 		New().
 		SetZoom(3).
-		SetTicksPerSecond(10).
+		SetTicksPerSecond(60).
 		Run(game)
 }
