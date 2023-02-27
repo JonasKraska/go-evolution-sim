@@ -19,6 +19,7 @@ type Organism struct {
 
 	sprite *ebiten.Image
 
+	brain  *Brain
 	genome Genome
 	energy Energy
 
@@ -27,6 +28,7 @@ type Organism struct {
 
 func NewOrganism(position engine.Position, genome Genome, energy Energy) *Organism {
 	o := &Organism{
+		brain:       NewBrain(),
 		genome:      NewGenome(genome),
 		energy:      energy,
 		orientation: engine.RandomVectorOnUnitCircle(),
@@ -44,6 +46,8 @@ func (o *Organism) Update(delta time.Duration) {
 		o.die()
 		return
 	}
+
+	o.brain.Process()
 
 	o.move(delta)
 }
@@ -67,6 +71,9 @@ func (o *Organism) burnEnergy(delta time.Duration) {
 }
 
 func (o *Organism) move(delta time.Duration) {
+	directionChangeAngle := o.brain.GetDirectionChange() * 10
+	o.orientation = o.orientation.Rotate(directionChangeAngle)
+
 	speed := float64(o.genome.Speed)
 	velocity := o.orientation.MulScalar(speed * delta.Seconds())
 

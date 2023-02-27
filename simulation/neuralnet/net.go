@@ -1,19 +1,41 @@
 package neuralnet
 
 type Net struct {
-	neurons []*Neuron
+	neurons map[Layer][]Neuroner
 }
 
 func New() *Net {
 	return &Net{
-		neurons: make([]*Neuron, 8),
+		neurons: make(map[Layer][]Neuroner),
 	}
 }
 
-func (n *Net) AddNeuron() *Neuron {
-	neuron := &Neuron{}
+func (n *Net) AddNeuron(neuron Neuroner) *Net {
+	layer := neuron.GetLayer()
 
-	n.neurons = append(n.neurons, neuron)
+	if n.neurons[layer] == nil {
+		n.neurons[layer] = make([]Neuroner, 0)
+	}
 
-	return neuron
+	n.neurons[layer] = append(n.neurons[layer], neuron)
+
+	return n
+}
+
+func (n *Net) Process() *Net {
+
+	for _, input := range n.neurons[LayerInput] {
+		input.Process()
+	}
+
+	// @TODO internal neurons can have conenctions to themselves
+	for _, internal := range n.neurons[LayerInternal] {
+		internal.Process()
+	}
+
+	for _, output := range n.neurons[LayerOutput] {
+		output.Process()
+	}
+
+	return n
 }
