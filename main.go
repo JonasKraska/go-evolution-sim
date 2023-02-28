@@ -25,7 +25,7 @@ func main() {
 		Height: 225,
 		Food: []simulation.FoodCohort{
 			{
-				Count:  64,
+				Count:  512,
 				Energy: 50,
 			},
 		},

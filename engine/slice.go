@@ -26,3 +26,14 @@ func PtrSliceRemovce[E comparable](slice []E, value E) []E {
 		return v == value
 	})
 }
+
+func SliceRemoveUnordered[E comparable](slice []E, value E) []E {
+	for i, v := range slice {
+		if v == value {
+			slice[i] = slice[len(slice)-1]
+			return slice[:len(slice)-1]
+		}
+	}
+
+	return slice
+}
