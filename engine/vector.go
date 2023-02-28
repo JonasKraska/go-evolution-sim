@@ -154,3 +154,10 @@ func (v Vector) Equals(other Vector) bool {
 func (v Vector) ToString() string {
 	return fmt.Sprintf("Vector(%f, %f)", v.X, v.Y)
 }
+
+func (v Vector) Rotate(angle float64) Vector {
+	return Vector{
+		X: (math.Cos(angle) * v.X) - (math.Sin(angle) * v.Y),
+		Y: (math.Sin(angle) * v.X) + (math.Cos(angle) * v.Y),
+	}
+}
