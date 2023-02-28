@@ -48,6 +48,12 @@ func NewWorld(config WorldConfig) *World {
 	w := &World{
 		width:  int(config.Width),
 		height: int(config.Height),
+		Game: engine.Game{
+			Grid: *engine.NewGrid(
+				engine.NewVector(float64(config.Width), float64(config.Height)),
+				10,
+			),
+		},
 	}
 
 	for _, cohort := range config.Food {
@@ -73,12 +79,13 @@ func NewWorld(config WorldConfig) *World {
 }
 
 func (w *World) Update(delta time.Duration) {
+	// @TODO can use grid cell of organism to check for collisions
 	for o := 1; o < len(w.organisms); o++ {
 		for f := 1; f < len(w.food); f++ {
 			organism := w.organisms[o]
 			food := w.food[f]
 
-			if organism.GetPosition().EqualsIgnoringDecimals(food.GetPosition()) {
+			if organism.GetPosition().ToPoint().Equals(food.GetPosition().ToPoint()) {
 				organism.Consume(food.Energy)
 				food.Remove()
 			}
@@ -93,6 +100,13 @@ func (w *World) Draw() *ebiten.Image {
 	return background
 }
 
+func (w *World) GetSize() engine.Vector {
+	return engine.Vector{
+		X: float64(w.width),
+		Y: float64(w.height),
+	}
+}
+
 func (w *World) Contains(position engine.Vector) bool {
 	return position.X > 0 && position.Y > 0 && position.X <= float64(w.width) && position.Y <= float64(w.height)
 }
@@ -101,6 +115,7 @@ func (w *World) spawnOrganism(position engine.Position, genome Genome, energy En
 	organism := NewOrganism(position, genome, energy)
 
 	w.organisms = append(w.organisms, organism)
+	w.Grid.Add(organism)
 	w.AddChild(organism)
 
 	organism.Register(OrganismDeathHook, func() {
@@ -114,6 +129,7 @@ func (w *World) spawnFood(position engine.Position, energy Energy) *Food {
 	food := NewFood(position, energy)
 
 	w.food = append(w.food, food)
+	w.Grid.Add(food)
 	w.AddChild(food)
 
 	food.Register(engine.NodeRemoveHook, func() {

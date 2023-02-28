@@ -161,3 +161,10 @@ func (v Vector) Rotate(angle float64) Vector {
 		Y: (math.Sin(angle) * v.X) + (math.Cos(angle) * v.Y),
 	}
 }
+
+func (v Vector) ToPoint() Point {
+	return Point{
+		X: int(math.Floor(v.X)),
+		Y: int(math.Floor(v.Y)),
+	}
+}

@@ -95,6 +95,7 @@ func (e *Engine) updateNode(node Noder, delta time.Duration) {
 func (e *Engine) moveNode(node Noder, delta time.Duration) {
 	if mover, ok := node.(Mover); ok {
 		mover.doMove()
+		e.game.GetGrid().Update(mover)
 
 		if e.game.Contains(mover.GetPosition()) == false {
 			mover.cancelMove()
