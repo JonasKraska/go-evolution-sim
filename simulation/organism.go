@@ -1,6 +1,7 @@
 package simulation
 
 import (
+	"fmt"
 	"github.com/JonasKraska/go-evolution-sim/engine"
 	"github.com/hajimehoshi/ebiten/v2"
 	"math"
@@ -8,7 +9,10 @@ import (
 )
 
 const (
-	OrganismDeathHook = engine.Hook("organism.death")
+	OrganismDeathHook   = engine.Hook("organism.death")
+	OrganismMaxTurnDeg  = 10.0
+	OrganismFieldOfView = 60.0
+	OrganismViewRange   = 10.0
 )
 
 type Energy = float64
@@ -47,7 +51,16 @@ func (o *Organism) Update(delta time.Duration) {
 		return
 	}
 
-	o.brain.Process()
+	food, foodDistance, foodAngle := o.detectClosestFood()
+	if food != nil {
+		fmt.Println(foodAngle.GetDeg())
+		fmt.Println(foodDistance)
+		o.orientation = o.orientation.Rotate(foodAngle)
+	} else {
+		o.brain.Process()
+		directionChangeAngle := o.brain.GetDirectionChange() * OrganismMaxTurnDeg
+		o.orientation = o.orientation.Rotate(engine.NewAngleDeg(directionChangeAngle))
+	}
 
 	o.move(delta)
 }
@@ -71,27 +84,55 @@ func (o *Organism) burnEnergy(delta time.Duration) {
 }
 
 func (o *Organism) consumeFood() {
-	nodes, _ := world.GetGrid().GetCellOf(o)
+	nodes, _ := world.GetGrid().GetNodesInCellOf(o)
 
 	for _, n := range nodes {
-		food, ok := n.(*Food)
-
-		if ok == false {
-			continue
-		}
-
-		if o.GetPosition().ToPoint().Equals(food.GetPosition().ToPoint()) {
-			if err := food.Remove(); err == nil {
-				o.Consume(food.Energy)
+		if food, ok := n.(*Food); ok {
+			if o.GetPosition().ToPoint().Equals(food.GetPosition().ToPoint()) {
+				if err := food.Remove(); err == nil {
+					o.Consume(food.Energy)
+				}
 			}
 		}
 	}
 }
 
-func (o *Organism) move(delta time.Duration) {
-	directionChangeAngle := o.brain.GetDirectionChange() * 10
-    o.orientation = o.orientation.Rotate(engine.NewAngleDeg(directionChangeAngle))
+var OrganismSeesFoodCounter = 0
 
+func (o *Organism) detectClosestFood() (*Food, float64, engine.Angle) {
+	nodes, _ := world.GetGrid().GetNodesInCellOf(o, 1)
+
+	var (
+		closestFood         *Food
+		closestFoodDistance float64
+		closestFoodAngle    engine.Angle
+	)
+
+	OrganismSeesFoodCounter = 0
+
+	for _, n := range nodes {
+		if food, ok := n.(*Food); ok {
+			foodDirection := food.GetPosition().Sub(o.GetPosition())
+			foodDistance := o.GetPosition().Distance(food.GetPosition())
+			foodAngle := o.GetVelocity().AngleBetween(foodDirection)
+
+			isInViewRange := foodDistance < OrganismViewRange
+			isInFieldOfView := foodAngle.GetDeg() < OrganismFieldOfView/2
+
+			if isInViewRange && isInFieldOfView && (closestFoodDistance == 0 || closestFoodDistance > foodDistance) {
+				closestFood = food
+				closestFoodDistance = foodDistance
+				closestFoodAngle = foodAngle
+
+				OrganismSeesFoodCounter++
+			}
+		}
+	}
+
+	return closestFood, closestFoodDistance, closestFoodAngle
+}
+
+func (o *Organism) move(delta time.Duration) {
 	speed := float64(o.genome.Speed)
 	velocity := o.orientation.MulScalar(speed * delta.Seconds())
 
