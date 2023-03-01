@@ -8,7 +8,6 @@ import (
 )
 
 type Food struct {
-	engine.Node
 	engine.Placeable
 
 	Energy Energy
