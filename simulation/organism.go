@@ -90,7 +90,7 @@ func (o *Organism) consumeFood() {
 
 func (o *Organism) move(delta time.Duration) {
 	directionChangeAngle := o.brain.GetDirectionChange() * 10
-	o.orientation = o.orientation.Rotate(directionChangeAngle)
+    o.orientation = o.orientation.Rotate(engine.NewAngleDeg(directionChangeAngle))
 
 	speed := float64(o.genome.Speed)
 	velocity := o.orientation.MulScalar(speed * delta.Seconds())
