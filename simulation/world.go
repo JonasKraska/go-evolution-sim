@@ -1,9 +1,11 @@
 package simulation
 
 import (
+	"fmt"
 	"github.com/JonasKraska/go-evolution-sim/engine"
 	"github.com/JonasKraska/go-evolution-sim/engine/random"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"image/color"
 )
 
@@ -12,9 +14,6 @@ type World struct {
 
 	width  int
 	height int
-
-	organisms []*Organism
-	food      []*Food
 }
 
 type WorldConfig struct {
@@ -58,7 +57,7 @@ func NewWorld(config WorldConfig) *World {
 	}
 
 	for _, cohort := range config.Food {
-		for f := 1; f < cohort.Count; f++ {
+		for f := 0; f < cohort.Count; f++ {
 			world.spawnFood(
 				world.randomPosition(),
 				cohort.Energy,
@@ -67,7 +66,7 @@ func NewWorld(config WorldConfig) *World {
 	}
 
 	for _, cohort := range config.Organisms {
-		for o := 1; o < cohort.Count; o++ {
+		for o := 0; o < cohort.Count; o++ {
 			world.spawnOrganism(
 				world.randomPosition(),
 				cohort.Genome,
@@ -82,6 +81,8 @@ func NewWorld(config WorldConfig) *World {
 func (w *World) Draw() *ebiten.Image {
 	background := ebiten.NewImage(w.width, w.height)
 	background.Fill(color.RGBA{R: 30, G: 30, B: 30, A: 255})
+
+	ebitenutil.DebugPrint(background, fmt.Sprintf("%d", OrganismSeesFoodCounter))
 
 	return background
 }
@@ -100,7 +101,6 @@ func (w *World) Contains(position engine.Vector) bool {
 func (w *World) spawnOrganism(position engine.Position, genome Genome, energy Energy) *Organism {
 	organism := NewOrganism(position, genome, energy)
 
-	w.organisms = append(w.organisms, organism)
 	w.Grid.Add(organism)
 	w.AddChild(organism)
 
@@ -114,19 +114,13 @@ func (w *World) spawnOrganism(position engine.Position, genome Genome, energy En
 func (w *World) spawnFood(position engine.Position, energy Energy) *Food {
 	food := NewFood(position, energy)
 
-	w.food = append(w.food, food)
 	w.Grid.Add(food)
 	w.AddChild(food)
-
-	food.Register(engine.NodeRemoveHook, func() {
-		engine.PtrSliceRemovce(w.food, food)
-	})
 
 	return food
 }
 
 func (w *World) onOrganismDeath(organism *Organism) {
-	engine.PtrSliceRemovce(w.organisms, organism)
 	w.spawnFood(organism.GetPosition(), Energy(5))
 }
 

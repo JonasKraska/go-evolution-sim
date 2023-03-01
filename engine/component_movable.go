@@ -9,6 +9,7 @@ type Movable struct {
 type Mover interface {
 	Placer
 	SetVelocity(velocity Vector)
+	GetVelocity() Vector
 	GetLastPosition() Position
 
 	cancelMove()
@@ -17,6 +18,10 @@ type Mover interface {
 
 func (m *Movable) SetVelocity(velocity Vector) {
 	m.velocity = velocity
+}
+
+func (m *Movable) GetVelocity() Vector {
+	return m.velocity
 }
 
 func (m *Movable) GetLastPosition() Position {

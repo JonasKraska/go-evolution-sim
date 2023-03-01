@@ -157,16 +157,16 @@ func (v Vector) ToString() string {
 
 func (v Vector) Rotate(angle Angle) Vector {
 	return Vector{
-        X: (math.Cos(angle.rad) * v.X) - (math.Sin(angle.rad) * v.Y),
-        Y: (math.Sin(angle.rad) * v.X) + (math.Cos(angle.rad) * v.Y),
+		X: (math.Cos(angle.rad) * v.X) - (math.Sin(angle.rad) * v.Y),
+		Y: (math.Sin(angle.rad) * v.X) + (math.Cos(angle.rad) * v.Y),
 	}
 }
 
 func (v Vector) AngleBetween(other Vector) Angle {
-    return NewAngleRad(math.Atan2(
-        other.Y * v.X - other.X * v.Y,
-        other.X * v.X - other.Y * v.Y,
-    ))
+	return NewAngleRad(math.Atan2(
+		other.Y*v.X-other.X*v.Y,
+		other.X*v.X-other.Y*v.Y,
+	))
 }
 
 func (v Vector) ToPoint() Point {

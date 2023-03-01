@@ -31,7 +31,7 @@ func main() {
 		},
 		Organisms: []simulation.OrganismCohort{
 			{
-				Count:  256,
+				Count:  1,
 				Energy: 100,
 				Genome: genome,
 			},

@@ -58,14 +58,31 @@ func (g *Grid) Add(node Placer) error {
 	return nil
 }
 
-func (g *Grid) GetCellOf(node Placer) ([]Placer, error) {
+func (g *Grid) GetNodesInCellOf(node Placer, perimeter ...int) ([]Placer, error) {
 	if g.Contains(node) == false {
 		return nil, errors.New("node outside of grid dimensions")
 	}
 
+	p := 0
+	if len(perimeter) > 0 {
+		p = perimeter[0]
+	}
+
 	point := g.translatePosition(node.GetPosition())
 
-	return g.hashmap[point.X][point.Y], nil
+	if p == 0 {
+		return g.hashmap[point.X][point.Y], nil
+	}
+
+	nodes := make([]Placer, 0)
+
+	for x := point.X - p; x <= point.X+p; x++ {
+		for y := point.Y - p; y <= point.Y+p; y++ {
+			nodes = append(nodes, g.hashmap[x][y]...)
+		}
+	}
+
+	return nodes, nil
 }
 
 func (g *Grid) Update(node Placer) error {
