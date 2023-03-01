@@ -155,11 +155,18 @@ func (v Vector) ToString() string {
 	return fmt.Sprintf("Vector(%f, %f)", v.X, v.Y)
 }
 
-func (v Vector) Rotate(angle float64) Vector {
+func (v Vector) Rotate(angle Angle) Vector {
 	return Vector{
-		X: (math.Cos(angle) * v.X) - (math.Sin(angle) * v.Y),
-		Y: (math.Sin(angle) * v.X) + (math.Cos(angle) * v.Y),
+        X: (math.Cos(angle.rad) * v.X) - (math.Sin(angle.rad) * v.Y),
+        Y: (math.Sin(angle.rad) * v.X) + (math.Cos(angle.rad) * v.Y),
 	}
+}
+
+func (v Vector) AngleBetween(other Vector) Angle {
+    return NewAngleRad(math.Atan2(
+        other.Y * v.X - other.X * v.Y,
+        other.X * v.X - other.Y * v.Y,
+    ))
 }
 
 func (v Vector) ToPoint() Point {
