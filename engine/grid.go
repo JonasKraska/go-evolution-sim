@@ -51,10 +51,14 @@ func (g *Grid) Add(node Placer) error {
 	point := g.translatePosition(node.GetPosition())
 	g.hashmap[point.X][point.Y] = append(g.hashmap[point.X][point.Y], node)
 
+	node.Register(NodeRemoveHook, func() {
+		g.remove(node)
+	})
+
 	return nil
 }
 
-func (g *Grid) Get(node Placer) ([]Placer, error) {
+func (g *Grid) GetCellOf(node Placer) ([]Placer, error) {
 	if g.Contains(node) == false {
 		return nil, errors.New("node outside of grid dimensions")
 	}
@@ -107,8 +111,19 @@ func (g *Grid) move(node Placer, from, to Point) error {
 		return errors.New("node outside of grid dimensions")
 	}
 
-	SliceRemoveUnordered(g.hashmap[from.X][from.Y], node)
+	g.hashmap[from.X][from.Y] = SliceRemoveUnordered(g.hashmap[from.X][from.Y], node)
 	g.hashmap[to.X][to.Y] = append(g.hashmap[to.X][to.Y], node)
+
+	return nil
+}
+
+func (g *Grid) remove(node Placer) error {
+	if g.Contains(node) == false {
+		return errors.New("node outside of grid dimensions")
+	}
+
+	point := g.translatePosition(node.GetPosition())
+	g.hashmap[point.X][point.Y] = SliceRemoveUnordered(g.hashmap[point.X][point.Y], node)
 
 	return nil
 }

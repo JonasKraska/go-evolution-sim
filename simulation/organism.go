@@ -14,7 +14,6 @@ const (
 type Energy = float64
 
 type Organism struct {
-	engine.Node
 	engine.Movable
 
 	sprite *ebiten.Image
@@ -41,6 +40,7 @@ func NewOrganism(position engine.Position, genome Genome, energy Energy) *Organi
 
 func (o *Organism) Update(delta time.Duration) {
 	o.burnEnergy(delta)
+	o.consumeFood()
 
 	if o.energy < 0 {
 		o.die()
@@ -68,6 +68,24 @@ func (o *Organism) Consume(energy Energy) {
 func (o *Organism) burnEnergy(delta time.Duration) {
 	rate := 0.5*math.Sqrt(float64(o.genome.Speed)) + 1
 	o.energy -= rate * delta.Seconds()
+}
+
+func (o *Organism) consumeFood() {
+	nodes, _ := world.GetGrid().GetCellOf(o)
+
+	for _, n := range nodes {
+		food, ok := n.(*Food)
+
+		if ok == false {
+			continue
+		}
+
+		if o.GetPosition().ToPoint().Equals(food.GetPosition().ToPoint()) {
+			if err := food.Remove(); err == nil {
+				o.Consume(food.Energy)
+			}
+		}
+	}
 }
 
 func (o *Organism) move(delta time.Duration) {

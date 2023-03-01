@@ -5,7 +5,6 @@ import (
 	"github.com/JonasKraska/go-evolution-sim/engine/random"
 	"github.com/hajimehoshi/ebiten/v2"
 	"image/color"
-	"time"
 )
 
 type World struct {
@@ -36,6 +35,8 @@ type FoodCohort struct {
 	Energy Energy
 }
 
+var world *World
+
 func NewWorld(config WorldConfig) *World {
 	if config.Width <= 0 {
 		config.Width = 64
@@ -45,7 +46,7 @@ func NewWorld(config WorldConfig) *World {
 		config.Height = 64
 	}
 
-	w := &World{
+	world = &World{
 		width:  int(config.Width),
 		height: int(config.Height),
 		Game: engine.Game{
@@ -58,8 +59,8 @@ func NewWorld(config WorldConfig) *World {
 
 	for _, cohort := range config.Food {
 		for f := 1; f < cohort.Count; f++ {
-			w.spawnFood(
-				w.randomPosition(),
+			world.spawnFood(
+				world.randomPosition(),
 				cohort.Energy,
 			)
 		}
@@ -67,30 +68,15 @@ func NewWorld(config WorldConfig) *World {
 
 	for _, cohort := range config.Organisms {
 		for o := 1; o < cohort.Count; o++ {
-			w.spawnOrganism(
-				w.randomPosition(),
+			world.spawnOrganism(
+				world.randomPosition(),
 				cohort.Genome,
 				cohort.Energy,
 			)
 		}
 	}
 
-	return w
-}
-
-func (w *World) Update(delta time.Duration) {
-	// @TODO can use grid cell of organism to check for collisions
-	for o := 1; o < len(w.organisms); o++ {
-		for f := 1; f < len(w.food); f++ {
-			organism := w.organisms[o]
-			food := w.food[f]
-
-			if organism.GetPosition().ToPoint().Equals(food.GetPosition().ToPoint()) {
-				organism.Consume(food.Energy)
-				food.Remove()
-			}
-		}
-	}
+	return world
 }
 
 func (w *World) Draw() *ebiten.Image {

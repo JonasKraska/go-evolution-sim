@@ -1,5 +1,7 @@
 package engine
 
+import "errors"
+
 type Nestable struct {
 	parent           Noder
 	children         []Noder
@@ -11,7 +13,7 @@ type Nester interface {
 	GetChildren() []Noder
 	AddChild(child Noder)
 	IsMarkedForRemoval() bool
-	Remove()
+	Remove() error
 
 	setParent(parent Noder)
 	removeChildren()
@@ -34,8 +36,13 @@ func (n *Node) IsMarkedForRemoval() bool {
 	return n.markedForRemoval
 }
 
-func (n *Node) Remove() {
+func (n *Node) Remove() error {
+	if n.markedForRemoval == true {
+		return errors.New("node was marked for removal already")
+	}
+
 	n.markedForRemoval = true
+	return nil
 }
 
 func (n *Node) setParent(parent Noder) {
