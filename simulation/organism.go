@@ -1,7 +1,6 @@
 package simulation
 
 import (
-	"fmt"
 	"github.com/JonasKraska/go-evolution-sim/engine"
 	"github.com/hajimehoshi/ebiten/v2"
 	"math"
@@ -51,16 +50,14 @@ func (o *Organism) Update(delta time.Duration) {
 		return
 	}
 
-	food, foodDistance, foodAngle := o.detectClosestFood()
-	if food != nil {
-		fmt.Println(foodAngle.GetDeg())
-		fmt.Println(foodDistance)
-		o.orientation = o.orientation.Rotate(foodAngle)
-	} else {
-		o.brain.Process()
-		directionChangeAngle := o.brain.GetDirectionChange() * OrganismMaxTurnDeg
-		o.orientation = o.orientation.Rotate(engine.NewAngleDeg(directionChangeAngle))
-	}
+	_, foodDistance, foodAngle := o.detectClosestFood()
+
+	o.brain.SetFoodDistance(foodDistance)
+	o.brain.SetFoodAngle(foodAngle)
+
+	o.brain.Process()
+
+	o.orientation = o.orientation.Rotate(o.brain.GetDirectionAngle())
 
 	o.move(delta)
 }
@@ -97,8 +94,6 @@ func (o *Organism) consumeFood() {
 	}
 }
 
-var OrganismSeesFoodCounter = 0
-
 func (o *Organism) detectClosestFood() (*Food, float64, engine.Angle) {
 	nodes, _ := world.GetGrid().GetNodesInCellOf(o, 1)
 
@@ -107,8 +102,6 @@ func (o *Organism) detectClosestFood() (*Food, float64, engine.Angle) {
 		closestFoodDistance float64
 		closestFoodAngle    engine.Angle
 	)
-
-	OrganismSeesFoodCounter = 0
 
 	for _, n := range nodes {
 		if food, ok := n.(*Food); ok {
@@ -123,8 +116,6 @@ func (o *Organism) detectClosestFood() (*Food, float64, engine.Angle) {
 				closestFood = food
 				closestFoodDistance = foodDistance
 				closestFoodAngle = foodAngle
-
-				OrganismSeesFoodCounter++
 			}
 		}
 	}

@@ -36,6 +36,10 @@ type Connection struct {
 	weight float64
 }
 
+func (n *Neuron) SetActivation(activation ActivationFunction) {
+	n.activation = activation
+}
+
 func (n *Neuron) GetLayer() Layer {
 	return n.layer
 }

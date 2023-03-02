@@ -1,11 +1,9 @@
 package simulation
 
 import (
-	"fmt"
 	"github.com/JonasKraska/go-evolution-sim/engine"
 	"github.com/JonasKraska/go-evolution-sim/engine/random"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"image/color"
 )
 
@@ -81,8 +79,6 @@ func NewWorld(config WorldConfig) *World {
 func (w *World) Draw() *ebiten.Image {
 	background := ebiten.NewImage(w.width, w.height)
 	background.Fill(color.RGBA{R: 30, G: 30, B: 30, A: 255})
-
-	ebitenutil.DebugPrint(background, fmt.Sprintf("%d", OrganismSeesFoodCounter))
 
 	return background
 }
