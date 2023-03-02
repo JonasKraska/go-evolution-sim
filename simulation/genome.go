@@ -5,30 +5,63 @@ import (
 	"image/color"
 )
 
+const GenomeStaticByteSize int = 4
+
 type Genome struct {
-	Color color.RGBA
-	Speed uint8
+	Color       color.RGBA
+	Speed       uint8
+	Connections []Connection
 }
 
-func NewGenome(g Genome) Genome {
-	g.Color.A = 255
+func NewGenome(genes uint8) Genome {
+	genome := Genome{
+		Color: color.RGBA{
+			R: uint8(random.IntBetween(50, 200)),
+			G: uint8(random.IntBetween(50, 200)),
+			B: uint8(random.IntBetween(50, 200)),
+			A: 255,
+		},
+		Speed:       10,
+		Connections: make([]Connection, genes),
+	}
 
-	return g
+	for c := 0; c < int(genes); c++ {
+		genome.Connections[c] = NewConnection()
+	}
+
+	return genome
 }
 
 func DeserializeGenome(bytes []byte) Genome {
-	return NewGenome(Genome{
+	genes := (len(bytes) - GenomeStaticByteSize) / ConnectionByteSize
+
+	genome := Genome{
 		Color: color.RGBA{
 			R: bytes[0],
 			G: bytes[1],
 			B: bytes[2],
+			A: 255,
 		},
-		Speed: bytes[3],
-	})
+		Speed:       bytes[3],
+		Connections: make([]Connection, genes),
+	}
+
+	for g := 0; g < genes; g++ {
+		from := GenomeStaticByteSize + (g * ConnectionByteSize)
+		to := from + ConnectionByteSize
+
+		genome.Connections[g] = DeserializeConnection(bytes[from:to])
+	}
+
+	return genome
+}
+
+func (g Genome) Copy() Genome {
+	return g
 }
 
 func (g Genome) Serialize() []byte {
-	bytes := make([]byte, 4)
+	bytes := make([]byte, GenomeStaticByteSize)
 
 	bytes[0] = g.Color.R
 	bytes[1] = g.Color.G
@@ -36,7 +69,11 @@ func (g Genome) Serialize() []byte {
 
 	bytes[3] = g.Speed
 
-	return bytes
+	for _, c := range g.Connections {
+		bytes = append(bytes, c.Serialize()...)
+	}
+
+	return bytes[:]
 }
 
 func (g Genome) PointMutation() Genome {

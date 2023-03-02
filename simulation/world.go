@@ -15,21 +15,13 @@ type World struct {
 }
 
 type WorldConfig struct {
-	Width     uint32
-	Height    uint32
-	Food      []FoodCohort
-	Organisms []OrganismCohort
-}
-
-type OrganismCohort struct {
-	Count  int
-	Energy Energy
-	Genome Genome
-}
-
-type FoodCohort struct {
-	Count  int
-	Energy Energy
+	Width          uint32
+	Height         uint32
+	FoodCount      uint16
+	FoodEnergy     Energy
+	OrganismCount  uint16
+	OrganismGenes  uint8
+	OrganismEnergy Energy
 }
 
 var world *World
@@ -54,23 +46,19 @@ func NewWorld(config WorldConfig) *World {
 		},
 	}
 
-	for _, cohort := range config.Food {
-		for f := 0; f < cohort.Count; f++ {
-			world.spawnFood(
-				world.randomPosition(),
-				cohort.Energy,
-			)
-		}
+	for f := 0; f < int(config.FoodCount); f++ {
+		world.spawnFood(
+			world.randomPosition(),
+			config.FoodEnergy,
+		)
 	}
 
-	for _, cohort := range config.Organisms {
-		for o := 0; o < cohort.Count; o++ {
-			world.spawnOrganism(
-				world.randomPosition(),
-				cohort.Genome,
-				cohort.Energy,
-			)
-		}
+	for o := 0; o < int(config.OrganismCount); o++ {
+		world.spawnOrganism(
+			world.randomPosition(),
+			NewGenome(config.OrganismGenes),
+			config.OrganismEnergy,
+		)
 	}
 
 	return world
