@@ -2,72 +2,88 @@ package simulation
 
 import (
 	"github.com/JonasKraska/go-evolution-sim/engine"
-	"github.com/JonasKraska/go-evolution-sim/engine/random"
 	NN "github.com/JonasKraska/go-evolution-sim/simulation/neuralnet"
+)
+
+type NeuronType = uint8
+
+const (
+	InputNeuronFoodDirection NeuronType = iota
+	InputNeuronFoodDistance
+	InternalNeuron
+	OutputNeuronDirection
+
+	RegisteredNeuronCount = 4
 )
 
 type Brain struct {
 	NN.Net
-
-	inputNeuronFoodDirection *NN.Neuron
-	inputNeuronFoodDistance  *NN.Neuron
-
-	internalNeuron *NN.Neuron
-
-	outputNeuronDirection *NN.Neuron
+	neurons []*NN.Neuron
 }
 
 func NewBrain() *Brain {
 	b := &Brain{
-		Net: *NN.New(),
-
-		inputNeuronFoodDirection: NN.NewNeuron(NN.LayerInput, NN.ActivationRandom),
-		inputNeuronFoodDistance:  NN.NewNeuron(NN.LayerInput, NN.ActivationRandom),
-
-		internalNeuron: NN.NewNeuron(NN.LayerInternal, NN.ActivationTanh),
-
-		outputNeuronDirection: NN.NewNeuron(NN.LayerOutput, NN.ActivationTanh),
+		Net:     *NN.New(),
+		neurons: make([]*NN.Neuron, RegisteredNeuronCount),
 	}
 
-	b.AddNeuron(b.inputNeuronFoodDirection)
-	b.AddNeuron(b.inputNeuronFoodDistance)
-	b.AddNeuron(b.internalNeuron)
-	b.AddNeuron(b.outputNeuronDirection)
+	b.neurons[InputNeuronFoodDirection] = NN.NewNeuron(NN.LayerInput, NN.ActivationRandom)
+	b.neurons[InputNeuronFoodDistance] = NN.NewNeuron(NN.LayerInput, NN.ActivationRandom)
+	b.neurons[InternalNeuron] = NN.NewNeuron(NN.LayerInternal, NN.ActivationTanh)
+	b.neurons[OutputNeuronDirection] = NN.NewNeuron(NN.LayerOutput, NN.ActivationTanh)
 
-	b.Connection(b.inputNeuronFoodDirection, b.internalNeuron, random.FloatBetween(-4, 4))
-	b.Connection(b.inputNeuronFoodDistance, b.internalNeuron, random.FloatBetween(-4, 4))
-	b.Connection(b.internalNeuron, b.outputNeuronDirection, random.FloatBetween(-4, 4))
-
-	return b
-}
-
-func (b *Brain) Connection(from, to NN.Neuroner, weight float64) *Brain {
-	if _, err := from.ConnectTo(to, weight); err != nil {
-		panic(err)
+	for _, n := range b.neurons {
+		b.AddNeuron(n)
 	}
 
 	return b
 }
 
-func (b *Brain) Process() *Brain {
+func (b *Brain) Connection(from NeuronType, to NeuronType, weight float64) *Brain {
+	neuronFrom := b.neurons[from]
+	neuronTo := b.neurons[to]
+
+	neuronFrom.ConnectTo(neuronTo, weight)
+
+	return b
+}
+
+func (b *Brain) Prune() {
+	b.Net.Prune()
+}
+
+func (b *Brain) Process() {
 	b.Net.Process()
-
-	return b
 }
 
 func (b *Brain) SetFoodDistance(distance float64) {
-	b.inputNeuronFoodDirection.SetActivation(func(sum float64) float64 {
+	b.neurons[InputNeuronFoodDistance].SetActivation(func(sum float64) float64 {
 		return distance / OrganismViewRange
 	})
 }
 
 func (b *Brain) SetFoodAngle(angle engine.Angle) {
-	b.inputNeuronFoodDirection.SetActivation(func(sum float64) float64 {
+	b.neurons[InputNeuronFoodDirection].SetActivation(func(sum float64) float64 {
 		return angle.GetDeg() / OrganismFieldOfView / 2
 	})
 }
 
 func (b *Brain) GetDirectionAngle() engine.Angle {
-	directionChangeAngle := b.outputNeuronDirection.GetOutput() * OrganismMaxTurnDeg
+	directionChangeAngle := b.neurons[OutputNeuronDirection].GetOutput() * OrganismMaxTurnDeg
 	return engine.NewAngleDeg(directionChangeAngle)
+}
+
+func NeuronTypeToString(neuronType NeuronType) string {
+	switch neuronType {
+	case InputNeuronFoodDirection:
+		return "InputNeuronFoodDirection"
+	case InputNeuronFoodDistance:
+		return "InputNeuronFoodDistance"
+	case InternalNeuron:
+		return "InternalNeuron"
+	case OutputNeuronDirection:
+		return "OutputNeuronDirection"
+	}
+
+	return "unkown"
 }

@@ -31,10 +31,16 @@ type Organism struct {
 func NewOrganism(position engine.Position, genome Genome, energy Energy) *Organism {
 	o := &Organism{
 		brain:       NewBrain(),
-		genome:      NewGenome(genome),
+		genome:      genome,
 		energy:      energy,
 		orientation: engine.RandomVectorOnUnitCircle(),
 	}
+
+	for _, c := range o.genome.Connections {
+		o.brain.Connection(c.From, c.To, c.Weight)
+	}
+
+	o.brain.Prune()
 
 	o.SetPosition(position)
 

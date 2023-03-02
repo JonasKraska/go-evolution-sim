@@ -22,6 +22,11 @@ func (n *Net) AddNeuron(neuron Neuroner) *Net {
 	return n
 }
 
+func (n *Net) Prune() *Net {
+	// @TODO remove all uneccessary connections that not contribute to any output to speed up `Process()`
+	return n
+}
+
 func (n *Net) Process() *Net {
 
 	for _, input := range n.neurons[LayerInput] {
