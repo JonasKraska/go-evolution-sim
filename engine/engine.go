@@ -11,7 +11,7 @@ import (
 type Engine struct {
 	game  Gamer
 	zoom  int
-	speed int64
+	speed float64
 
 	lastUpdate time.Time
 }
@@ -28,7 +28,7 @@ func (e *Engine) SetZoom(factor uint8) *Engine {
 }
 
 func (e *Engine) SetTicksPerSecond(tps uint16) *Engine {
-	e.speed = int64(tps) / 60
+	e.speed = float64(tps) / 60
 	ebiten.SetTPS(int(tps))
 	return e
 }
@@ -49,7 +49,10 @@ func (e *Engine) Update() error {
 	var delta time.Duration
 
 	for {
-		delta = time.Since(e.lastUpdate) * time.Duration(e.speed)
+		originalDelta := time.Since(e.lastUpdate)
+		speedAdjustedDelta := float64(originalDelta) * e.speed
+		delta = time.Duration(speedAdjustedDelta)
+
 		if delta > time.Microsecond {
 			break
 		}
@@ -58,6 +61,7 @@ func (e *Engine) Update() error {
 	DebugReset()
 	DebugPrintln(fmt.Sprintf("Game TPS: %.2f", ebiten.ActualTPS()))
 	DebugPrintln(fmt.Sprintf("Game FPS: %.2f", ebiten.ActualFPS()))
+	DebugPrintln(fmt.Sprintf("Game Speed: %.2f", e.speed))
 
 	e.updateNode(e.game, delta)
 	e.moveNode(e.game, delta)
