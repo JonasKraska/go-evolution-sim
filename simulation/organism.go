@@ -8,10 +8,11 @@ import (
 )
 
 const (
-	OrganismDeathHook   = engine.Hook("organism.death")
-	OrganismMaxTurnDeg  = 10.0
-	OrganismFieldOfView = 60.0
-	OrganismViewRange   = 10.0
+	OrganismDeathHook              = engine.Hook("organism.death")
+	OrganismMaxTurnDeg             = 10.0
+	OrganismFieldOfView            = 60.0
+	OrganismViewRange              = 10.0
+	OrganismProliferationThreshold = 150.0
 )
 
 type Energy = float64
@@ -43,6 +44,7 @@ func NewOrganism(position engine.Position, genome Genome, energy Energy) *Organi
 	o.brain.Prune()
 
 	o.SetPosition(position)
+	o.SetVelocity(engine.RandomVectorOnUnitCircle())
 
 	return o
 }
@@ -55,6 +57,8 @@ func (o *Organism) Update(delta time.Duration) {
 		o.die()
 		return
 	}
+
+	o.proliferation()
 
 	_, foodDistance, foodAngle := o.detectClosestFood()
 
@@ -97,6 +101,14 @@ func (o *Organism) consumeFood() {
 				}
 			}
 		}
+	}
+}
+
+func (o *Organism) proliferation() {
+	if o.energy >= OrganismProliferationThreshold {
+		o.energy = o.energy / 2
+
+		world.spawnOrganism(o.GetPosition(), o.genome, o.energy)
 	}
 }
 

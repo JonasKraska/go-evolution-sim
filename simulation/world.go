@@ -5,18 +5,24 @@ import (
 	"github.com/JonasKraska/go-evolution-sim/engine/random"
 	"github.com/hajimehoshi/ebiten/v2"
 	"image/color"
+	"time"
+)
+
+const (
+	WorldFoodSpawnInterval = 1.5
 )
 
 type World struct {
 	engine.Game
 
-	width  int
-	height int
+	config WorldConfig
+
+	lastFoodSpawnedAt time.Time
 }
 
 type WorldConfig struct {
-	Width          uint32
-	Height         uint32
+	Width          int
+	Height         int
 	FoodCount      uint16
 	FoodEnergy     Energy
 	OrganismCount  uint16
@@ -36,8 +42,8 @@ func NewWorld(config WorldConfig) *World {
 	}
 
 	world = &World{
-		width:  int(config.Width),
-		height: int(config.Height),
+		config:            config,
+		lastFoodSpawnedAt: time.Now(),
 		Game: engine.Game{
 			Grid: *engine.NewGrid(
 				engine.NewVector(float64(config.Width), float64(config.Height)),
@@ -64,8 +70,15 @@ func NewWorld(config WorldConfig) *World {
 	return world
 }
 
+func (w *World) Update(delta time.Duration) {
+	if time.Since(w.lastFoodSpawnedAt).Seconds() > WorldFoodSpawnInterval {
+		w.spawnFood(world.randomPosition(), w.config.FoodEnergy)
+		w.lastFoodSpawnedAt = time.Now()
+	}
+}
+
 func (w *World) Draw() *ebiten.Image {
-	background := ebiten.NewImage(w.width, w.height)
+	background := ebiten.NewImage(w.config.Width, w.config.Height)
 	background.Fill(color.RGBA{R: 30, G: 30, B: 30, A: 255})
 
 	return background
@@ -73,13 +86,13 @@ func (w *World) Draw() *ebiten.Image {
 
 func (w *World) GetSize() engine.Vector {
 	return engine.Vector{
-		X: float64(w.width),
-		Y: float64(w.height),
+		X: float64(w.config.Width),
+		Y: float64(w.config.Height),
 	}
 }
 
 func (w *World) Contains(position engine.Vector) bool {
-	return position.X > 0 && position.Y > 0 && position.X <= float64(w.width) && position.Y <= float64(w.height)
+	return position.X > 0 && position.Y > 0 && position.X <= float64(w.config.Width) && position.Y <= float64(w.config.Height)
 }
 
 func (w *World) spawnOrganism(position engine.Position, genome Genome, energy Energy) *Organism {
@@ -110,7 +123,7 @@ func (w *World) onOrganismDeath(organism *Organism) {
 
 func (w *World) randomPosition() engine.Position {
 	return engine.Position{
-		X: random.FloatBetween(0, w.width),
-		Y: random.FloatBetween(0, w.height),
+		X: random.FloatBetween(0, w.config.Width),
+		Y: random.FloatBetween(0, w.config.Height),
 	}
 }
