@@ -35,7 +35,7 @@ func NewOrganism(position engine.Position, genome Genome, energy Energy) *Organi
 	}
 
 	for _, c := range o.genome.Connections {
-		o.brain.Connection(c.From, c.To, c.Weight)
+		o.brain.Connection(c.GetFrom(), c.GetTo(), c.GetWeight())
 	}
 
 	o.brain.Prune()
@@ -101,7 +101,6 @@ func (o *Organism) consumeFood() {
 func (o *Organism) reproduction() {
 	if o.energy >= OrganismProliferationThreshold {
 		o.energy = o.energy / 2
-
 		world.spawnOrganism(o.GetPosition(), o.genome, o.energy)
 	}
 }

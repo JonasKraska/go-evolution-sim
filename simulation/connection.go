@@ -1,46 +1,51 @@
 package simulation
 
 import (
-	"encoding/binary"
 	"github.com/JonasKraska/go-evolution-sim/engine/random"
 	"math"
 )
 
-const ConnectionByteSize int = 10
-const ConnectionIdPadding = 255 / RegisteredNeuronCount
+const ConnectionByteSize int = 3
+const ConnectionIdPadding = float64(256) / RegisteredNeuronCount
 
 type Connection struct {
-	From   NeuronType
-	To     NeuronType
-	Weight float64
+	from   uint8
+	to     uint8
+	weight uint8
 }
 
 func NewConnection() Connection {
 	return Connection{
-		From:   NeuronType(random.IntBetween(0, RegisteredNeuronCount-1)),
-		To:     NeuronType(random.IntBetween(0, RegisteredNeuronCount-1)),
-		Weight: random.FloatBetween(-4, 4),
+		from:   uint8(random.IntBetween(0, 255)),
+		to:     uint8(random.IntBetween(0, 255)),
+		weight: uint8(random.IntBetween(0, 255)),
 	}
 }
 
 func DeserializeConnection(bytes []byte) Connection {
 	return Connection{
-		From:   uint8(bytes[0]) / ConnectionIdPadding,
-		To:     uint8(bytes[1]) / ConnectionIdPadding,
-		Weight: math.Float64frombits(binary.BigEndian.Uint64(bytes[2:])),
+		from:   bytes[0],
+		to:     bytes[1],
+		weight: bytes[2],
 	}
 }
 
 func (c Connection) Serialize() []byte {
-	bytes := make([]byte, 2)
+	return []byte{
+		c.from,
+		c.to,
+		c.weight,
+	}
+}
 
-	bytes[0] = c.From * ConnectionIdPadding
-	bytes[1] = c.To * ConnectionIdPadding
+func (c Connection) GetFrom() NeuronType {
+	return NeuronType(float64(c.from) / ConnectionIdPadding)
+}
 
-	weightBytes := make([]byte, 8)
-	binary.BigEndian.PutUint64(weightBytes[:], math.Float64bits(c.Weight))
+func (c Connection) GetTo() NeuronType {
+	return NeuronType(float64(c.to) / ConnectionIdPadding)
+}
 
-	bytes = append(bytes, weightBytes...)
-
-	return bytes
+func (c Connection) GetWeight() float64 {
+	return math.Tanh(float64(uint16(c.weight)-128)/64) * 4
 }
