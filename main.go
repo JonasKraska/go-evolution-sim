@@ -26,6 +26,6 @@ func main() {
 	engine.
 		New().
 		SetZoom(3).
-		SetTicksPerSecond(60).
+		SetTicksPerSecond(180).
 		Run(game)
 }

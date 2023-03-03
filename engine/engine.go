@@ -2,17 +2,16 @@ package engine
 
 import (
 	"fmt"
-	"github.com/JonasKraska/go-evolution-sim/engine/random"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"log"
 	"math"
 	"time"
 )
 
 type Engine struct {
-	game Gamer
-	zoom int
+	game  Gamer
+	zoom  int
+	speed int64
 
 	lastUpdate time.Time
 }
@@ -29,6 +28,7 @@ func (e *Engine) SetZoom(factor uint8) *Engine {
 }
 
 func (e *Engine) SetTicksPerSecond(tps uint16) *Engine {
+	e.speed = int64(tps) / 60
 	ebiten.SetTPS(int(tps))
 	return e
 }
@@ -49,11 +49,15 @@ func (e *Engine) Update() error {
 	var delta time.Duration
 
 	for {
-		delta = time.Since(e.lastUpdate)
+		delta = time.Since(e.lastUpdate) * time.Duration(e.speed)
 		if delta > time.Microsecond {
 			break
 		}
 	}
+
+	DebugReset()
+	DebugPrintln(fmt.Sprintf("Game TPS: %.2f", ebiten.ActualTPS()))
+	DebugPrintln(fmt.Sprintf("Game FPS: %.2f", ebiten.ActualFPS()))
 
 	e.updateNode(e.game, delta)
 	e.moveNode(e.game, delta)
@@ -79,9 +83,8 @@ func (e *Engine) Draw(screen *ebiten.Image) {
 	// draw frame on screen
 	screen.DrawImage(frame, options)
 
-	// show debug labels
-	ebitenutil.DebugPrint(screen, fmt.Sprintf("Game TPS: %.2f", ebiten.ActualTPS()))
-	ebitenutil.DebugPrint(screen, fmt.Sprintf("\nGame FPS: %.2f", ebiten.ActualFPS()))
+	// show debug output
+	DebugPrint(screen)
 }
 
 func (e *Engine) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
@@ -105,11 +108,6 @@ func (e *Engine) moveNode(node Noder, delta time.Duration) {
 		mover.doMove()
 
 		if e.game.Contains(mover.GetPosition()) == false {
-			randomAngle := random.FloatBetween(45, 135)
-			randomDirection := float64(random.IntBetween(-1, 1))
-			reboundAngle := NewAngleDeg(randomAngle * randomDirection)
-
-			mover.SetVelocity(mover.GetVelocity().Rotate(reboundAngle))
 			mover.cancelMove()
 		}
 

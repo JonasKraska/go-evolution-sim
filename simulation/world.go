@@ -1,6 +1,7 @@
 package simulation
 
 import (
+	"fmt"
 	"github.com/JonasKraska/go-evolution-sim/engine"
 	"github.com/JonasKraska/go-evolution-sim/engine/random"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -9,15 +10,15 @@ import (
 )
 
 const (
-	WorldFoodSpawnInterval = 1.5
+	WorldFoodSpawnInterval = 1.5 // seconds
 )
 
 type World struct {
 	engine.Game
 
-	config WorldConfig
-
+	config            WorldConfig
 	lastFoodSpawnedAt time.Time
+	organisms         []*Organism
 }
 
 type WorldConfig struct {
@@ -44,6 +45,7 @@ func NewWorld(config WorldConfig) *World {
 	world = &World{
 		config:            config,
 		lastFoodSpawnedAt: time.Now(),
+		organisms:         make([]*Organism, 0),
 		Game: engine.Game{
 			Grid: *engine.NewGrid(
 				engine.NewVector(float64(config.Width), float64(config.Height)),
@@ -71,6 +73,8 @@ func NewWorld(config WorldConfig) *World {
 }
 
 func (w *World) Update(delta time.Duration) {
+	engine.DebugPrintln(fmt.Sprintf("Organisms: %d", len(w.organisms)))
+
 	if time.Since(w.lastFoodSpawnedAt).Seconds() > WorldFoodSpawnInterval {
 		w.spawnFood(world.randomPosition(), w.config.FoodEnergy)
 		w.lastFoodSpawnedAt = time.Now()
@@ -98,10 +102,12 @@ func (w *World) Contains(position engine.Vector) bool {
 func (w *World) spawnOrganism(position engine.Position, genome Genome, energy Energy) *Organism {
 	organism := NewOrganism(position, genome, energy)
 
+	w.organisms = append(w.organisms, organism)
 	w.Grid.Add(organism)
 	w.AddChild(organism)
 
 	organism.Register(OrganismDeathHook, func() {
+		w.organisms = engine.SliceRemoveUnordered(w.organisms, organism)
 		w.onOrganismDeath(organism)
 	})
 
@@ -118,7 +124,7 @@ func (w *World) spawnFood(position engine.Position, energy Energy) *Food {
 }
 
 func (w *World) onOrganismDeath(organism *Organism) {
-	w.spawnFood(organism.GetPosition(), Energy(5))
+	w.spawnFood(w.randomPosition(), w.config.FoodEnergy)
 }
 
 func (w *World) randomPosition() engine.Position {

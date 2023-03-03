@@ -55,7 +55,7 @@ func (o *Organism) Update(delta time.Duration) {
 		return
 	}
 
-	o.proliferation()
+	o.reproduction()
 
 	_, foodDistance, foodAngle := o.detectClosestFood()
 
@@ -98,7 +98,7 @@ func (o *Organism) consumeFood() {
 	}
 }
 
-func (o *Organism) proliferation() {
+func (o *Organism) reproduction() {
 	if o.energy >= OrganismProliferationThreshold {
 		o.energy = o.energy / 2
 
