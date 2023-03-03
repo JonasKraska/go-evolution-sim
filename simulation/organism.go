@@ -25,16 +25,13 @@ type Organism struct {
 	brain  *Brain
 	genome Genome
 	energy Energy
-
-	orientation engine.Vector
 }
 
 func NewOrganism(position engine.Position, genome Genome, energy Energy) *Organism {
 	o := &Organism{
-		brain:       NewBrain(),
-		genome:      genome,
-		energy:      energy,
-		orientation: engine.RandomVectorOnUnitCircle(),
+		brain:  NewBrain(),
+		genome: genome,
+		energy: energy,
 	}
 
 	for _, c := range o.genome.Connections {
@@ -66,9 +63,6 @@ func (o *Organism) Update(delta time.Duration) {
 	o.brain.SetFoodAngle(foodAngle)
 
 	o.brain.Process()
-
-	o.orientation = o.orientation.Rotate(o.brain.GetDirectionAngle())
-
 	o.move(delta)
 }
 
@@ -142,8 +136,9 @@ func (o *Organism) detectClosestFood() (*Food, float64, engine.Angle) {
 }
 
 func (o *Organism) move(delta time.Duration) {
-	speed := float64(o.genome.Speed)
-	velocity := o.orientation.MulScalar(speed * delta.Seconds())
+	currentVelocity := o.GetVelocity().Normalize()
+	newOrientation := currentVelocity.Rotate(o.brain.GetDirectionAngle())
+	velocity := newOrientation.MulScalar(float64(o.genome.Speed) * delta.Seconds())
 
 	o.SetVelocity(velocity)
 }

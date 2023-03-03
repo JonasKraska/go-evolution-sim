@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+	"github.com/JonasKraska/go-evolution-sim/engine/random"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"log"
@@ -45,7 +46,14 @@ func (e *Engine) Run(game Gamer) {
 }
 
 func (e *Engine) Update() error {
-	delta := time.Since(e.lastUpdate)
+	var delta time.Duration
+
+	for {
+		delta = time.Since(e.lastUpdate)
+		if delta > time.Microsecond {
+			break
+		}
+	}
 
 	e.updateNode(e.game, delta)
 	e.moveNode(e.game, delta)
@@ -95,11 +103,17 @@ func (e *Engine) updateNode(node Noder, delta time.Duration) {
 func (e *Engine) moveNode(node Noder, delta time.Duration) {
 	if mover, ok := node.(Mover); ok {
 		mover.doMove()
-		e.game.GetGrid().Update(mover)
 
 		if e.game.Contains(mover.GetPosition()) == false {
+			randomAngle := random.FloatBetween(45, 135)
+			randomDirection := float64(random.IntBetween(-1, 1))
+			reboundAngle := NewAngleDeg(randomAngle * randomDirection)
+
+			mover.SetVelocity(mover.GetVelocity().Rotate(reboundAngle))
 			mover.cancelMove()
 		}
+
+		e.game.GetGrid().Update(mover)
 	}
 
 	for _, n := range node.GetChildren() {
