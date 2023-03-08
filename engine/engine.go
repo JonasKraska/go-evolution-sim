@@ -49,6 +49,7 @@ func (e *Engine) Update() error {
 	var delta time.Duration
 
 	for {
+		// @TODO debugg speed
 		originalDelta := time.Since(e.lastUpdate)
 		speedAdjustedDelta := float64(originalDelta) * e.speed
 		delta = time.Duration(speedAdjustedDelta)

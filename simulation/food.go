@@ -11,12 +11,12 @@ type Food struct {
 	engine.Node
 	engine.Placeable
 
-	Energy Energy
+	energy Energy
 }
 
 func NewFood(position engine.Position, energy Energy) *Food {
 	f := &Food{
-		Energy: energy,
+		energy: energy,
 	}
 
 	f.SetPosition(position)
@@ -25,7 +25,7 @@ func NewFood(position engine.Position, energy Energy) *Food {
 }
 
 func (f *Food) Update(delta time.Duration) {
-	// @TODO: energy decay?
+	// @TODO energy decay?
 }
 
 var foodSprite *ebiten.Image

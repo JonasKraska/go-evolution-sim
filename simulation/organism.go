@@ -92,7 +92,7 @@ func (o *Organism) consumeFood() {
 		if food, ok := n.(*Food); ok {
 			if o.GetPosition().ToPoint().Equals(food.GetPosition().ToPoint()) {
 				if err := food.Remove(); err == nil {
-					o.Consume(food.Energy)
+					o.Consume(food.energy)
 				}
 			}
 		}

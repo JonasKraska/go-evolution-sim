@@ -6,12 +6,12 @@ import (
 )
 
 func main() {
-	simulation := simulation.New(simulation.WorldConfig{
+	simulation := simulation.New(simulation.Config{
 		Width:  350,
 		Height: 225,
 
 		FoodCount:  512,
-		FoodEnergy: 50,
+		FoodEnergy: 10,
 
 		OrganismCount:  256,
 		OrganismGenes:  3,
@@ -21,6 +21,6 @@ func main() {
 	engine.
 		New().
 		SetZoom(3).
-		SetTicksPerSecond(180).
+		SetTicksPerSecond(300).
 		Run(simulation)
 }

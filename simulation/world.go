@@ -10,64 +10,36 @@ import (
 )
 
 const (
-	WorldFoodSpawnInterval = 1.5 // seconds
+	WorldOrganismSpawned = engine.Hook("world.organism.spawned")
+	WorldOrganismRemoved = engine.Hook("world.organism.removed")
 )
 
 type World struct {
 	engine.Placeable
 	engine.Game
 
-	config            WorldConfig
-	lastFoodSpawnedAt time.Time
-	organisms         []*Organism
-}
+	width  int
+	height int
 
-type WorldConfig struct {
-	Width          int
-	Height         int
-	FoodCount      uint16
-	FoodEnergy     Energy
-	OrganismCount  uint16
-	OrganismGenes  uint8
-	OrganismEnergy Energy
+	organisms []*Organism
+	foods     []*Food
 }
 
 var world *World
 
-func NewWorld(config WorldConfig) *World {
-	if config.Width <= 0 {
-		config.Width = 64
-	}
-
-	if config.Height <= 0 {
-		config.Height = 64
-	}
+func NewWorld(width uint16, height uint16) *World {
 
 	world = &World{
-		config:            config,
-		lastFoodSpawnedAt: time.Now(),
-		organisms:         make([]*Organism, 0),
+		width:     int(width),
+		height:    int(height),
+		organisms: make([]*Organism, 0),
+		foods:     make([]*Food, 0),
 		Game: engine.Game{
 			Grid: *engine.NewGrid(
-				engine.NewVector(float64(config.Width), float64(config.Height)),
+				engine.NewVector(float64(width), float64(height)),
 				10,
 			),
 		},
-	}
-
-	for f := 0; f < int(config.FoodCount); f++ {
-		world.spawnFood(
-			world.randomPosition(),
-			config.FoodEnergy,
-		)
-	}
-
-	for o := 0; o < int(config.OrganismCount); o++ {
-		world.spawnOrganism(
-			world.randomPosition(),
-			NewGenome(config.OrganismGenes),
-			config.OrganismEnergy,
-		)
 	}
 
 	return world
@@ -75,15 +47,10 @@ func NewWorld(config WorldConfig) *World {
 
 func (w *World) Update(delta time.Duration) {
 	engine.DebugPrintln(fmt.Sprintf("Organisms: %d", len(w.organisms)))
-
-	if time.Since(w.lastFoodSpawnedAt).Seconds() > WorldFoodSpawnInterval {
-		w.spawnFood(world.randomPosition(), w.config.FoodEnergy)
-		w.lastFoodSpawnedAt = time.Now()
-	}
 }
 
 func (w *World) Draw() *ebiten.Image {
-	background := ebiten.NewImage(w.config.Width, w.config.Height)
+	background := ebiten.NewImage(w.width, w.height)
 	background.Fill(color.RGBA{R: 30, G: 30, B: 30, A: 255})
 
 	return background
@@ -91,13 +58,13 @@ func (w *World) Draw() *ebiten.Image {
 
 func (w *World) GetSize() engine.Vector {
 	return engine.Vector{
-		X: float64(w.config.Width),
-		Y: float64(w.config.Height),
+		X: float64(w.width),
+		Y: float64(w.height),
 	}
 }
 
 func (w *World) Contains(position engine.Vector) bool {
-	return position.X > 0 && position.Y > 0 && position.X <= float64(w.config.Width) && position.Y <= float64(w.config.Height)
+	return position.X > 0 && position.Y > 0 && position.X <= float64(w.width) && position.Y <= float64(w.height)
 }
 
 func (w *World) spawnOrganism(position engine.Position, genome Genome, energy Energy) *Organism {
@@ -110,7 +77,10 @@ func (w *World) spawnOrganism(position engine.Position, genome Genome, energy En
 	organism.Register(OrganismDeathHook, func() {
 		w.organisms = engine.SliceRemoveUnordered(w.organisms, organism)
 		w.onOrganismDeath(organism)
+		w.Dispatch(WorldOrganismRemoved)
 	})
+
+	w.Dispatch(WorldOrganismSpawned)
 
 	return organism
 }
@@ -118,19 +88,25 @@ func (w *World) spawnOrganism(position engine.Position, genome Genome, energy En
 func (w *World) spawnFood(position engine.Position, energy Energy) *Food {
 	food := NewFood(position, energy)
 
+	w.foods = append(w.foods, food)
 	w.Grid.Add(food)
 	w.AddChild(food)
+
+	food.Register(engine.NodeRemoveHook, func() {
+		w.foods = engine.SliceRemoveUnordered(w.foods, food)
+	})
 
 	return food
 }
 
 func (w *World) onOrganismDeath(organism *Organism) {
-	w.spawnFood(w.randomPosition(), w.config.FoodEnergy)
+	// @TODO make the hooks have context and move it to the simualtion
+	w.spawnFood(w.randomPosition(), 10)
 }
 
 func (w *World) randomPosition() engine.Position {
 	return engine.Position{
-		X: random.FloatBetween(0, w.config.Width),
-		Y: random.FloatBetween(0, w.config.Height),
+		X: random.FloatBetween(0, w.width),
+		Y: random.FloatBetween(0, w.height),
 	}
 }

@@ -27,6 +27,7 @@ func NewBrain() *Brain {
 		neurons: make([]*NN.Neuron, RegisteredNeuronCount),
 	}
 
+	// @TODO add input neuron for distance to obstancle (world boundaries for now)
 	b.neurons[InputNeuronFoodDirection] = NN.NewNeuron(NN.LayerInput, NN.ActivationRandom)
 	b.neurons[InputNeuronFoodDistance] = NN.NewNeuron(NN.LayerInput, NN.ActivationRandom)
 	b.neurons[InternalNeuron] = NN.NewNeuron(NN.LayerInternal, NN.ActivationTanh)
