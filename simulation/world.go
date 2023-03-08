@@ -14,6 +14,7 @@ const (
 )
 
 type World struct {
+	engine.Placeable
 	engine.Game
 
 	config            WorldConfig

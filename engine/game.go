@@ -7,6 +7,7 @@ type Game struct {
 
 type Gamer interface {
 	Noder
+	Drawer
 
 	GetSize() Vector
 	GetGrid() *Grid

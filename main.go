@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	game := simulation.NewWorld(simulation.WorldConfig{
+	simulation := simulation.New(simulation.WorldConfig{
 		Width:  350,
 		Height: 225,
 
@@ -18,14 +18,9 @@ func main() {
 		OrganismEnergy: 100,
 	})
 
-	simulation.New(
-		simulation.Config{},
-		game,
-	)
-
 	engine.
 		New().
 		SetZoom(3).
 		SetTicksPerSecond(180).
-		Run(game)
+		Run(simulation)
 }

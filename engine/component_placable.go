@@ -3,12 +3,10 @@ package engine
 type Position = Vector
 
 type Placeable struct {
-	Node
 	position Position
 }
 
 type Placer interface {
-	Noder
 	SetPosition(position Position)
 	GetPosition() Position
 }

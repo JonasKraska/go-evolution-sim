@@ -51,9 +51,12 @@ func (g *Grid) Add(node Placer) error {
 	point := g.translatePosition(node.GetPosition())
 	g.hashmap[point.X][point.Y] = append(g.hashmap[point.X][point.Y], node)
 
-	node.Register(NodeRemoveHook, func() {
-		g.remove(node)
-	})
+	hooker, isHooker := node.(Hooker)
+	if isHooker == true {
+		hooker.Register(NodeRemoveHook, func() {
+			g.remove(node)
+		})
+	}
 
 	return nil
 }

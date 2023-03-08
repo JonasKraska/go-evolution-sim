@@ -18,6 +18,7 @@ const (
 type Energy = float64
 
 type Organism struct {
+	engine.Node
 	engine.Movable
 
 	sprite *ebiten.Image
