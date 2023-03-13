@@ -6,21 +6,24 @@ import (
 )
 
 func main() {
-	simulation := simulation.New(simulation.Config{
-		Width:  350,
-		Height: 225,
+	sim := simulation.New(simulation.Config{
+		FoodCount:                  64,
+		FoodEnergy:                 10,
+		FoodGrowthRate:             1,
+		FoodProliferationThreshold: 20,
 
-		FoodCount:  512,
-		FoodEnergy: 10,
+		OrganismCount:                  128,
+		OrganismGenes:                  3,
+		OrganismEnergy:                 100,
+		OrganismMotabolismRate:         5,
+		OrganismProliferationThreshold: 150,
 
-		OrganismCount:  256,
-		OrganismGenes:  3,
-		OrganismEnergy: 100,
+		ElitismThreeshold: 20,
 	})
 
 	engine.
 		New().
 		SetZoom(3).
-		SetTicksPerSecond(300).
-		Run(simulation)
+		SetTicksPerSecond(600).
+		Run(sim)
 }

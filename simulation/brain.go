@@ -2,7 +2,7 @@ package simulation
 
 import (
 	"github.com/JonasKraska/go-evolution-sim/engine"
-	NN "github.com/JonasKraska/go-evolution-sim/simulation/neuralnet"
+	NN "github.com/JonasKraska/go-evolution-sim/engine/neuralnet"
 )
 
 type NeuronType = uint8

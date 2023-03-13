@@ -5,11 +5,10 @@ import (
 	"image/color"
 )
 
-const GenomeStaticByteSize int = 4
+const GenomeStaticByteSize int = 3
 
 type Genome struct {
 	Color       color.RGBA
-	Speed       uint8
 	Connections []Connection
 }
 
@@ -21,7 +20,6 @@ func NewGenome(genes uint8) Genome {
 			B: uint8(random.IntBetween(50, 200)),
 			A: 255,
 		},
-		Speed:       10,
 		Connections: make([]Connection, genes),
 	}
 
@@ -42,7 +40,6 @@ func DeserializeGenome(bytes []byte) Genome {
 			B: bytes[2],
 			A: 255,
 		},
-		Speed:       bytes[3],
 		Connections: make([]Connection, genes),
 	}
 
@@ -66,8 +63,6 @@ func (g Genome) Serialize() []byte {
 	bytes[0] = g.Color.R
 	bytes[1] = g.Color.G
 	bytes[2] = g.Color.B
-
-	bytes[3] = g.Speed
 
 	for _, c := range g.Connections {
 		bytes = append(bytes, c.Serialize()...)

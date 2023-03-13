@@ -28,7 +28,6 @@ type World struct {
 var world *World
 
 func NewWorld(width uint16, height uint16) *World {
-
 	world = &World{
 		width:     int(width),
 		height:    int(height),
@@ -46,7 +45,16 @@ func NewWorld(width uint16, height uint16) *World {
 }
 
 func (w *World) Update(delta time.Duration) {
+	totalOrganismEnergy := 0.0
+	for _, o := range w.organisms {
+		totalOrganismEnergy += o.energy
+	}
+
+	averageOrganismEnergy := totalOrganismEnergy / float64(len(w.organisms))
+
 	engine.DebugPrintln(fmt.Sprintf("Organisms: %d", len(w.organisms)))
+	engine.DebugPrintln(fmt.Sprintf("Organisms Energy: %.2f", averageOrganismEnergy))
+	engine.DebugPrintln(fmt.Sprintf("Food: %d", len(w.foods)))
 }
 
 func (w *World) Draw() *ebiten.Image {

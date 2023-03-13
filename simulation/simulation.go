@@ -7,55 +7,47 @@ import (
 	"time"
 )
 
-const (
-	MinOrganismCount  = 25
-	FoodSpawnInterval = 1.5 // seconds
-)
-
 type Simulation struct {
 	engine.Game
 
-	config            Config
-	world             *World
+	config Config
+	world  *World
+
 	generation        int
 	lastFoodSpawnedAt time.Time
 }
+
+var simulation *Simulation
 
 func New(config Config) *Simulation {
 	config = NewConfig(config)
 	world := NewWorld(config.Width, config.Height)
 
-	s := &Simulation{
+	simulation = &Simulation{
 		config:            config,
 		world:             world,
 		lastFoodSpawnedAt: time.Now(),
 	}
 
-	s.AddChild(s.world)
-	s.spawnGeneration()
+	simulation.AddChild(simulation.world)
+	simulation.spawnGeneration()
 
 	world.Register(WorldOrganismRemoved, func() {
-		if len(world.organisms) <= MinOrganismCount {
-			s.spawnGeneration()
+		if len(world.organisms) <= int(config.ElitismThreeshold) {
+			simulation.spawnGeneration()
 		}
 	})
 
-	return s
+	return simulation
 }
 
 func (s *Simulation) Update(delta time.Duration) {
 	engine.DebugPrintln(fmt.Sprintf("Generation: %d", s.generation))
-
-	if time.Since(s.lastFoodSpawnedAt).Seconds() > FoodSpawnInterval {
-		s.world.spawnFood(world.randomPosition(), s.config.FoodEnergy)
-		s.lastFoodSpawnedAt = time.Now()
-	}
 }
 
 func (s *Simulation) Draw() *ebiten.Image {
 	return s.world.Draw()
 }
-
 func (s *Simulation) GetSize() engine.Vector {
 	return s.world.GetSize()
 }
@@ -69,11 +61,13 @@ func (s *Simulation) spawnGeneration() {
 
 	// replenish existing foods
 	for _, ef := range s.world.foods {
+		ef.SetPosition(s.world.randomPosition())
 		ef.energy = s.config.FoodEnergy
 	}
 
 	// replenish existing organisms
 	for _, eo := range s.world.organisms {
+		eo.SetPosition(s.world.randomPosition())
 		eo.energy = s.config.OrganismEnergy
 	}
 
@@ -85,6 +79,21 @@ func (s *Simulation) spawnGeneration() {
 		)
 	}
 
+	// despawn over supply on foods until config is reached
+	for of := len(s.world.foods) - 1; of >= int(s.config.FoodCount); of-- {
+		s.world.foods[of].Remove()
+	}
+
+	// copy most successful organims
+	existingOrganismCount := len(s.world.organisms)
+	for co := 0; co < existingOrganismCount; co++ {
+		s.world.spawnOrganism(
+			world.randomPosition(),
+			s.world.organisms[co].genome.PointMutation(),
+			s.config.OrganismEnergy,
+		)
+	}
+
 	// spawn new organims until config is reached
 	for no := len(s.world.organisms); no < int(s.config.OrganismCount); no++ {
 		s.world.spawnOrganism(
@@ -93,6 +102,11 @@ func (s *Simulation) spawnGeneration() {
 			s.config.OrganismEnergy,
 		)
 	}
+
+	// despawn over populated organisms until config is reached
+	//	for oo := len(s.world.organisms) - 1; oo >= int(s.config.OrganismCount); oo-- {
+	//		s.world.organisms[oo].Remove()
+	//	}
 
 	s.generation++
 }

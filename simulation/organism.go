@@ -3,16 +3,14 @@ package simulation
 import (
 	"github.com/JonasKraska/go-evolution-sim/engine"
 	"github.com/hajimehoshi/ebiten/v2"
-	"math"
 	"time"
 )
 
 const (
-	OrganismDeathHook              = engine.Hook("organism.death")
-	OrganismMaxTurnDeg             = 10.0
-	OrganismFieldOfView            = 60.0
-	OrganismViewRange              = 10.0
-	OrganismProliferationThreshold = 150.0
+	OrganismDeathHook   = engine.Hook("organism.death")
+	OrganismMaxTurnDeg  = 10.0
+	OrganismFieldOfView = 60.0
+	OrganismViewRange   = 10.0
 )
 
 type Energy = float64
@@ -56,7 +54,7 @@ func (o *Organism) Update(delta time.Duration) {
 		return
 	}
 
-	o.reproduction()
+	o.proliferate()
 
 	_, foodDistance, foodAngle := o.detectClosestFood()
 
@@ -81,8 +79,7 @@ func (o *Organism) Consume(energy Energy) {
 }
 
 func (o *Organism) burnEnergy(delta time.Duration) {
-	rate := 0.5*math.Sqrt(float64(o.genome.Speed)) + 1
-	o.energy -= rate * delta.Seconds()
+	o.energy -= simulation.config.OrganismMotabolismRate * delta.Seconds()
 }
 
 func (o *Organism) consumeFood() {
@@ -99,8 +96,8 @@ func (o *Organism) consumeFood() {
 	}
 }
 
-func (o *Organism) reproduction() {
-	if o.energy >= OrganismProliferationThreshold {
+func (o *Organism) proliferate() {
+	if o.energy >= float64(simulation.config.OrganismProliferationThreshold) {
 		o.energy = o.energy / 2
 		world.spawnOrganism(o.GetPosition(), o.genome, o.energy)
 	}
@@ -138,7 +135,7 @@ func (o *Organism) detectClosestFood() (*Food, float64, engine.Angle) {
 func (o *Organism) move(delta time.Duration) {
 	currentVelocity := o.GetVelocity().Normalize()
 	newOrientation := currentVelocity.Rotate(o.brain.GetDirectionAngle())
-	velocity := newOrientation.MulScalar(float64(o.genome.Speed) * delta.Seconds())
+	velocity := newOrientation.MulScalar(17.5 * delta.Seconds())
 
 	o.SetVelocity(velocity)
 }
