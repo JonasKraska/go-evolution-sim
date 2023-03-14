@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"errors"
 	"fmt"
 	"github.com/JonasKraska/go-evolution-sim/engine/random"
 	"math"
@@ -14,6 +15,10 @@ type Vector struct {
 
 func Dot(ihs, rhs Vector) float64 {
 	return ihs.X*rhs.X + ihs.Y*rhs.Y
+}
+
+func Cross(ihs, rhs Vector) float64 {
+	return ihs.X*rhs.Y - ihs.Y*rhs.X
 }
 
 func Lerp(a, b Vector, t float64) Vector {
@@ -116,6 +121,10 @@ func (v Vector) Distance(other Vector) float64 {
 
 func (v Vector) Dot(other Vector) float64 {
 	return v.X*other.X + v.Y*other.Y
+}
+
+func (v Vector) Cross(other Vector) float64 {
+	return v.X*other.Y - v.Y*other.X
 }
 
 func (v Vector) Lerp(other Vector, t float64) Vector {

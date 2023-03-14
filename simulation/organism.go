@@ -57,9 +57,15 @@ func (o *Organism) Update(delta time.Duration) {
 	o.proliferate()
 
 	_, foodDistance, foodAngle := o.detectClosestFood()
-
 	o.brain.SetFoodDistance(foodDistance)
 	o.brain.SetFoodAngle(foodAngle)
+
+	obstacleDetected := o.detectObstacle()
+	if obstacleDetected == true {
+		o.brain.SetObstacleDistance(OrganismViewRange)
+	} else {
+		o.brain.SetObstacleDistance(OrganismViewRange * -1)
+	}
 
 	o.brain.Process()
 	o.move(delta)
@@ -130,6 +136,11 @@ func (o *Organism) detectClosestFood() (*Food, float64, engine.Angle) {
 	}
 
 	return closestFood, closestFoodDistance, closestFoodAngle
+}
+
+func (o *Organism) detectObstacle() bool {
+	viewPoint := o.GetVelocity().Normalize().MulScalar(OrganismViewRange)
+	return !world.Contains(viewPoint)
 }
 
 func (o *Organism) move(delta time.Duration) {

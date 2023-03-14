@@ -10,10 +10,11 @@ type NeuronType = uint8
 const (
 	InputNeuronFoodDirection NeuronType = iota
 	InputNeuronFoodDistance
+	InputNeuronObstacleDistance
 	InternalNeuron
 	OutputNeuronDirection
 
-	RegisteredNeuronCount = 4
+	RegisteredNeuronCount = 5
 )
 
 type Brain struct {
@@ -30,6 +31,7 @@ func NewBrain() *Brain {
 	// @TODO add input neuron for distance to obstancle (world boundaries for now)
 	b.neurons[InputNeuronFoodDirection] = NN.NewNeuron(NN.LayerInput, NN.ActivationRandom)
 	b.neurons[InputNeuronFoodDistance] = NN.NewNeuron(NN.LayerInput, NN.ActivationRandom)
+	b.neurons[InputNeuronObstacleDistance] = NN.NewNeuron(NN.LayerInput, NN.ActivationRandom)
 	b.neurons[InternalNeuron] = NN.NewNeuron(NN.LayerInternal, NN.ActivationTanh)
 	b.neurons[OutputNeuronDirection] = NN.NewNeuron(NN.LayerOutput, NN.ActivationTanh)
 
@@ -63,6 +65,12 @@ func (b *Brain) SetFoodDistance(distance float64) {
 	})
 }
 
+func (b *Brain) SetObstacleDistance(distance float64) {
+	b.neurons[InputNeuronObstacleDistance].SetActivation(func(sum float64) float64 {
+		return distance / OrganismViewRange
+	})
+}
+
 func (b *Brain) SetFoodAngle(angle engine.Angle) {
 	b.neurons[InputNeuronFoodDirection].SetActivation(func(sum float64) float64 {
 		return angle.GetDeg() / OrganismFieldOfView / 2
@@ -72,19 +80,4 @@ func (b *Brain) SetFoodAngle(angle engine.Angle) {
 func (b *Brain) GetDirectionAngle() engine.Angle {
 	directionChangeAngle := b.neurons[OutputNeuronDirection].GetOutput() * OrganismMaxTurnDeg
 	return engine.NewAngleDeg(directionChangeAngle)
-}
-
-func NeuronTypeToString(neuronType NeuronType) string {
-	switch neuronType {
-	case InputNeuronFoodDirection:
-		return "InputNeuronFoodDirection"
-	case InputNeuronFoodDistance:
-		return "InputNeuronFoodDistance"
-	case InternalNeuron:
-		return "InternalNeuron"
-	case OutputNeuronDirection:
-		return "OutputNeuronDirection"
-	}
-
-	return "unkown"
 }

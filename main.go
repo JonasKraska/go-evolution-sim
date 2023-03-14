@@ -13,7 +13,7 @@ func main() {
 		FoodProliferationThreshold: 20,
 
 		OrganismCount:                  128,
-		OrganismGenes:                  3,
+		OrganismGenes:                  4,
 		OrganismEnergy:                 100,
 		OrganismMotabolismRate:         5,
 		OrganismProliferationThreshold: 150,
